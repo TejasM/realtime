@@ -1,0 +1,39 @@
+<!DOCTYPE html> 
+<html> 
+	<head> 
+	<title>StudentInfo</title> 
+	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.0a3/jquery.mobile-1.0a3.min.css" />
+	<script type="text/javascript" src="http://code.jquery.com/jquery-1.4.3.min.js"></script>
+	<script type="text/javascript" src="http://code.jquery.com/mobile/1.0a3/jquery.mobile-1.0a3.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="../../../static/style.css" />
+	</head> 
+<body> 
+	<div data-role="page">
+		<div id="container">
+		<div data-role="header" class="center">
+			<h1>Page Title</h1>
+		</div><!-- /header -->
+		
+		<div data-role="content" id="s" data-role="fieldcontain">
+			<label for="slider-step">Input slider:</label>
+			<input data-theme="a" data-track-theme="b"
+					type="range" name="slider-step" id="slider-step" 
+				   value="3" 
+				   min="0" 
+				   max="4" 
+				   step="1" />
+		</div>
+		
+		<div data-role="content" id="QuestionContainer" data-role="fieldcontain">
+			<label for="Questions">Ask a Question:</label>
+			<input type="text" name="Quenstions" id="myQs" value=""  />
+		</div>
+	
+		<div data-role="content">
+			<input type="submit" value="Submit Button" />
+		</div>
+	</div>
+
+</body>
+</html>
+

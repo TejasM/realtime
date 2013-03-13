@@ -1,0 +1,76 @@
+<!DOCTYPE html> 
+<html> 
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"> 	
+		<title>Professor Settings</title>
+		<link rel="stylesheet" href="{{ STATIC_URL }}bootstrapSwitch.css">
+        <link rel="stylesheet" href="{{ STATIC_URL }}bootstrap.css">
+        <script src="http://code.jquery.com/jquery-1.9.0.js"></script>
+        <script src="http://code.jquery.com/jquery-migrate-1.1.1.js"></script>
+        <link href="{{ STATIC_URL }}bootstrap-responsive.css" rel="stylesheet">
+        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}style.css" />
+		<script type="text/javascript">
+		</script>
+	</head> 
+	<body>
+		<div data-role="page">
+			<div id="container">
+				<div data-role="header" class="center">
+					<h1>Session Id</h1>
+				</div><!-- /header -->
+				<form class="form-horizontal">
+					<fieldset>
+						<h3>Types of Statistics</h3>
+						<div class="control-group" id="uderstanding_div">
+							<label class="control-label" for="understanding">Understanding:</label>
+							<div class="controls">
+								<div id="understanding_toggle_button" class="switch">
+									<input type="checkbox" checked="checked" id="understanding_input">
+								</div>
+							</div>
+						</div>
+						
+						<div class="control-group" id="interest_div">
+							<label class="control-label" for="interest">Interest:</label>
+							<div class="controls">
+								<div id="interest_toggle_button" class="switch">
+									<input type="checkbox" checked="checked" id="interest_input">
+								</div>
+							</div>
+						</div>
+						
+						<h3>General Settings</h3>
+						<div class="control-group" id="sound_div">
+							<label class="control-label" for="sound">Sound Switch:</label>
+							<div class="controls">
+								<div id="sound_toggle_button" class="switch">
+									<input type="checkbox" checked="checked" id="sound_input">
+								</div>
+							</div>
+						</div>
+
+						<!--start session -->
+						<div class="form-actions">
+							<button type="submit" class="btn btn-primary" class="btn">Start Session</button>
+						</div>
+					</fieldset>
+				</form>				
+			</div>
+		</div>
+
+        <script src="{{ STATIC_URL }}js/jquery.js"></script>
+        <script src="{{ STATIC_URL }}js/bootstrap-transition.js"></script>
+        <script src="{{ STATIC_URL }}js/bootstrap-alert.js"></script>
+        <script src="{{ STATIC_URL }}js/bootstrap-modal.js"></script>
+        <script src="{{ STATIC_URL }}js/bootstrap-dropdown.js"></script>
+        <script src="{{ STATIC_URL }}js/bootstrap-scrollspy.js"></script>
+        <script src="{{ STATIC_URL }}js/bootstrap-tab.js"></script>
+        <script src="{{ STATIC_URL }}js/bootstrap-tooltip.js"></script>
+        <script src="{{ STATIC_URL }}js/bootstrap-popover.js"></script>
+        <script src="{{ STATIC_URL }}js/bootstrap-button.js"></script>
+        <script src="{{ STATIC_URL }}js/bootstrap-collapse.js"></script>
+        <script src="{{ STATIC_URL }}js/bootstrap-carousel.js"></script>
+        <script src="{{ STATIC_URL }}js/bootstrap-typeahead.js"></script>
+        <script src="{{ STATIC_URL }}js/bootstrapSwitch.js"></script>
+	</body>
+</html>
