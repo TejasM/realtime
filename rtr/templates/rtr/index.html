@@ -41,7 +41,8 @@
 	<body>
 		<div data-role="page">
 			<div id="container">
-				<form action="login/" class="form-horizontal" method="post">
+                {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+                <form action="login/" class="form-horizontal" method="post">
                     {% csrf_token %}
 					<fieldset>
 					<div class="control-group" id="username_div">
