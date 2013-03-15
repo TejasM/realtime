@@ -3,17 +3,51 @@
 	<head> 
 		<meta name="viewport" content="width=device-width, initial-scale=1.0"> 	
 		<title>Professor Data</title>
-		<link rel="stylesheet" href="../../../static/bootstrap.css">
-		<link rel="stylesheet" href="bootstrap-master/docs/assets/css/bootstrapSwitch.css">	
-		<script src="http://code.jquery.com/jquery-1.9.0.js"></script>
-		<script src="http://code.jquery.com/jquery-migrate-1.1.1.js"></script>
-		<link href="../../../static/bootstrap-responsive.css" rel="stylesheet">
-		<link rel="stylesheet" type="text/css" href="../../../static/style.css" />
+        <link rel="stylesheet" href="{{ STATIC_URL }}bootstrapSwitch.css">
+        <link rel="stylesheet" href="{{ STATIC_URL }}bootstrap.css">
+        <script src="http://code.jquery.com/jquery-1.9.0.js"></script>
+        <script src="http://code.jquery.com/jquery-migrate-1.1.1.js"></script>
+        <link href="{{ STATIC_URL }}bootstrap-responsive.css" rel="stylesheet">
+        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}style.css" />
 		<script type="text/javascript">
 		$(function() {
 			$("#question_input").change(function () {
 				$("#question_list").toggle();
 			});
+
+            function colorFromValue(value) {
+                var color;
+                if (value > 1) {
+                    color = "#009933";
+                } else if (value > 0) {
+                    color = "#33CC33";
+                } else if (value < -1) {
+                    color = "#FF0000";
+                } else if (value < 0) {
+                    color = "#FF3300";
+                } else {
+                    color = "#FFFFFF";
+                }
+                return color;
+            };
+
+            setInterval(updatePercentage, 2000);
+            function updatePercentage() {
+                /*$.get('statisticsGet', function(data) {
+                    $('#Percent1').html(data.value1.toFixed(2)).css('background-color', colorFromValue(data.value1));
+                    $('#Percent2').html(data.value2.toFixed(2)).css('background-color', colorFromValue(data.value2));
+                }).fail(function(jqXHR, textStatus, errorThrown) {
+                            alert("Error" + errorThrown);
+                });
+                $.get('questions').done(function(questions) {
+                    $("#List").empty();
+                    $.each(questions, function(index, question) {
+                        $("#List").append("<li>" + question + "</li>");
+                    });
+                }).fail(function(jqXHR, textStatus, errorThrown) {
+                            alert("Error" + errorThrown);
+                });*/
+            }
 		});
 		</script>
 	</head> 
@@ -47,19 +81,19 @@
 				</div>
 			</div>
 		</div>
-		<script src="../../../static/js/jquery.js"></script>
-		<script src="../../../static/js/bootstrap-transition.js"></script>
-		<script src="../../../static/js/bootstrap-alert.js"></script>
-		<script src="../../../static/js/bootstrap-modal.js"></script>
-		<script src="../../../static/js/bootstrap-dropdown.js"></script>
-		<script src="../../../static/js/bootstrap-scrollspy.js"></script>
-		<script src="../../../static/js/bootstrap-tab.js"></script>
-		<script src="../../../static/js/bootstrap-tooltip.js"></script>
-		<script src="../../../static/js/bootstrap-popover.js"></script>
-		<script src="../../../static/js/bootstrap-button.js"></script>
-		<script src="../../../static/js/bootstrap-collapse.js"></script>
-		<script src="../../../static/js/bootstrap-carousel.js"></script>
-		<script src="../../../static/js/bootstrap-typeahead.js"></script>
-		<script src="../../../static/js/bootstrapSwitch.js"></script>
+        <script src="{{ STATIC_URL }}js/jquery.js"></script>
+        <script src="{{ STATIC_URL }}js/bootstrap-transition.js"></script>
+        <script src="{{ STATIC_URL }}js/bootstrap-alert.js"></script>
+        <script src="{{ STATIC_URL }}js/bootstrap-modal.js"></script>
+        <script src="{{ STATIC_URL }}js/bootstrap-dropdown.js"></script>
+        <script src="{{ STATIC_URL }}js/bootstrap-scrollspy.js"></script>
+        <script src="{{ STATIC_URL }}js/bootstrap-tab.js"></script>
+        <script src="{{ STATIC_URL }}js/bootstrap-tooltip.js"></script>
+        <script src="{{ STATIC_URL }}js/bootstrap-popover.js"></script>
+        <script src="{{ STATIC_URL }}js/bootstrap-button.js"></script>
+        <script src="{{ STATIC_URL }}js/bootstrap-collapse.js"></script>
+        <script src="{{ STATIC_URL }}js/bootstrap-carousel.js"></script>
+        <script src="{{ STATIC_URL }}js/bootstrap-typeahead.js"></script>
+        <script src="{{ STATIC_URL }}js/bootstrapSwitch.js"></script>
 	</body>
 </html>

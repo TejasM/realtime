@@ -18,14 +18,15 @@
 				<div data-role="header" class="center">
 					<h1>Session Id</h1>
 				</div><!-- /header -->
-				<form class="form-horizontal">
+				<form class="form-horizontal" action="start/" method="post">
+                    {% csrf_token %}
 					<fieldset>
 						<h3>Types of Statistics</h3>
 						<div class="control-group" id="uderstanding_div">
 							<label class="control-label" for="understanding">Understanding:</label>
 							<div class="controls">
 								<div id="understanding_toggle_button" class="switch">
-									<input type="checkbox" checked="checked" id="understanding_input">
+									<input type="checkbox" checked="checked" name="understanding_toggle">
 								</div>
 							</div>
 						</div>
@@ -34,7 +35,7 @@
 							<label class="control-label" for="interest">Interest:</label>
 							<div class="controls">
 								<div id="interest_toggle_button" class="switch">
-									<input type="checkbox" checked="checked" id="interest_input">
+									<input type="checkbox" checked="checked" name="interest_toggle">
 								</div>
 							</div>
 						</div>
@@ -44,7 +45,7 @@
 							<label class="control-label" for="sound">Sound Switch:</label>
 							<div class="controls">
 								<div id="sound_toggle_button" class="switch">
-									<input type="checkbox" checked="checked" id="sound_input">
+									<input type="checkbox" checked="checked" name="sound_toggle">
 								</div>
 							</div>
 						</div>
