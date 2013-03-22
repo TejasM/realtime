@@ -5642,6 +5642,10 @@ a.thumbnail:focus {
   background-color: #999999;
 }
 
+.large-label {
+    font-size: 13px;
+}
+
 .label {
   -webkit-border-radius: 3px;
      -moz-border-radius: 3px;

@@ -15,5 +15,9 @@ urlpatterns = patterns('',
     url(r'profDisplay/$', views.prof_display, name='prof_display'),
     url(r'profDisplay/statisticsGet/$', views.get_stats, name='get_stats'),
     url(r'profDisplay/questions/$', views.get_stats, name='get_questions'),
+    url(r'audience_view/$', views.audience_display, name='audience_display'),
+    url(r'audience_view/audienceResponse$', views.updateStats, name='audience_response'),
+    url(r'audience_view/audienceQuestion$', views.ask_question, name='audience_question'),
+    url(r'endsession/$', views.end_session, name='end_session'),
 )
 

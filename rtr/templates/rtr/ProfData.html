@@ -33,9 +33,10 @@
 
             setInterval(updatePercentage, 2000);
             function updatePercentage() {
-                /*$.get('statisticsGet', function(data) {
-                    $('#Percent1').html(data.value1.toFixed(2)).css('background-color', colorFromValue(data.value1));
-                    $('#Percent2').html(data.value2.toFixed(2)).css('background-color', colorFromValue(data.value2));
+                $.get('statisticsGet', function(data) {
+                    for(var i=0; i<data.length; i++){
+                        $('#Percent' + i.toString()).html(data[i].toFixed(2)).css('background-color', colorFromValue(data[i]));
+                    }
                 }).fail(function(jqXHR, textStatus, errorThrown) {
                             alert("Error" + errorThrown);
                 });
@@ -46,9 +47,10 @@
                     });
                 }).fail(function(jqXHR, textStatus, errorThrown) {
                             alert("Error" + errorThrown);
-                });*/
-            }
-		});
+                }
+		    }
+
+        });
 		</script>
 	</head> 
 	<body>
@@ -58,7 +60,15 @@
 					<h1>Session Id</h1>
 				</div><!-- /header -->
 				
-				<div data-role="content" id="Percent">				  
+				<div data-role="content" id="Percent">
+                    {%  for label in labels %}
+                        <div class="control-group" id="question_switch_div">
+                            <label class="control-label" for="{{ label }}_percent" class="large-label">{{ label }}</label>
+                            <div class="controls">
+                                <h1 id="Percent{{ forloop.counter0 }}" style="text-align: center">0</h1>
+                            </div>
+                        </div>
+                    {% endfor %}
 				</div>
 				  
 				<div data-role="content" id="question_list">
@@ -68,17 +78,19 @@
 				</div>			
 				
 				<div class="control-group" id="question_switch_div">					
-					<label class="control-label" for="interest">Display Question:</label>
+					<label class="control-label" for="question_input">Display Question:</label>
 					<div class="controls">
 						<div id="question_toggle_button" class="switch">
 							<input type="checkbox" checked="checked" id="question_input">
 						</div>
 					</div>
 				</div>
-				
-				<div class="form-actions">
-					<button type="submit" class="btn btn-primary">Get Session Analytics</button>
-				</div>
+                <form class="form-horizontal" action="endsession/" method="post">
+                    {% csrf_token %}
+                    <div class="form-actions">
+                        <button type="submit" id="end_sesssion" class="btn btn-primary">End Session</button>
+                    </div>
+                </form>
 			</div>
 		</div>
         <script src="{{ STATIC_URL }}js/jquery.js"></script>
