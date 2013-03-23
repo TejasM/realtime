@@ -2,7 +2,7 @@
 import os
 from django.conf.global_settings import LOGIN_URL
 
-DEBUG = False
+DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
