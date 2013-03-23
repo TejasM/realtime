@@ -125,7 +125,7 @@ def prof_start_display(request):
         if not session.stats_on.__contains__('understanding') and not session.stats_on.__contains__('interest'):
             return redirect(reverse("rtr:prof_settings"), {"error_message": "Select at least one of the stats"})
         session.save()
-    return prof_display(request)
+    return HttpResponseRedirect('/rtr/profDisplay')
 
 
 @login_required()
