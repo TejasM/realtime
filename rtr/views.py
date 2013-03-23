@@ -111,20 +111,21 @@ def prof_display(request):
 @login_required()
 def prof_start_display(request):
     session = Session.objects.get(pk=request.session.get('session'))
-    if session.stats_on is ("" or None):
-        try:
-            _ = request.POST['understanding_toggle']
+    try:
+        _ = request.POST['understanding_toggle']
+        if not session.stats_on.__contains__('understanding'):
             session.stats_on += 'Understanding,'
-        except Exception as _:
-            pass
-        try:
-            _ = request.POST['interest_toggle']
+    except Exception as _:
+        pass
+    try:
+        _ = request.POST['interest_toggle']
+        if not session.stats_on.__contains__('interest'):
             session.stats_on += 'Interest,'
-        except Exception as _:
-            pass
-        if not session.stats_on.__contains__('understanding') and not session.stats_on.__contains__('interest'):
-            return redirect(reverse("rtr:prof_settings"), {"error_message": "Select at least one of the stats"})
-        session.save()
+    except Exception as _:
+        pass
+    if not session.stats_on.__contains__('understanding') and not session.stats_on.__contains__('interest'):
+        return redirect(reverse("rtr:prof_settings"), {"error_message": "Select at least one of the stats"})
+    session.save()
     return HttpResponseRedirect('/rtr/profDisplay')
 
 
