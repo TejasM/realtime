@@ -113,17 +113,17 @@ def prof_start_display(request):
     session = Session.objects.get(pk=request.session.get('session'))
     try:
         _ = request.POST['understanding_toggle']
-        if not session.stats_on.__contains__('understanding'):
+        if not session.stats_on.__contains__('Understanding'):
             session.stats_on += 'Understanding,'
     except Exception as _:
         pass
     try:
         _ = request.POST['interest_toggle']
-        if not session.stats_on.__contains__('interest'):
+        if not session.stats_on.__contains__('Interest'):
             session.stats_on += 'Interest,'
     except Exception as _:
         pass
-    if not session.stats_on.__contains__('understanding') and not session.stats_on.__contains__('interest'):
+    if not session.stats_on.__contains__('Understanding') and not session.stats_on.__contains__('Interest'):
         return redirect(reverse("rtr:prof_settings"), {"error_message": "Select at least one of the stats"})
     session.save()
     return HttpResponseRedirect('/rtr/profDisplay')
