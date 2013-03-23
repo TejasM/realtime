@@ -17,6 +17,10 @@ def index(request):
 
 
 def end_session(request):
+    if request.session.get('type') == 'creater':
+        series = Session.objects.get(pk=int(request.session['session'])).series
+        series.live = False
+        series.save()
     request.session.clear()
     return redirect(reverse('rtr:index'))
 
@@ -97,7 +101,10 @@ def prof_display(request):
         session = Session.objects.get(pk=request.session.get('session'))
         if session.stats_on is ("" or None):
             return redirect(reverse("rtr:prof_settings"))
-        stats_on = session.stats_on.split(',')
+        stats_on = session.stats_on
+        if stats_on[-1] == ',':
+            stats_on = stats_on[0:len(stats_on) - 1]
+        stats_on = stats_on.split(",")
         context = {}
         labels = []
         for i, stat in enumerate(stats_on):
