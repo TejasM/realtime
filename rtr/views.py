@@ -1,9 +1,10 @@
 from django.contrib.auth.decorators import login_required
+from django.core import serializers
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate
-from django.utils import timezone
+from django.contrib.auth import authenticate, login
+from django.utils import timezone, simplejson
 
 from rtr.models import Session, Series, Stats, Question, Stat
 
@@ -15,13 +16,11 @@ def index(request):
     return render(request, 'rtr/index.html')
 
 
-@login_required()
 def end_session(request):
     request.session.clear()
     return redirect(reverse('rtr:index'))
 
 
-@login_required()
 def audience_display(request):
     if request.session.get('session') is not None:
         statids = request.session.get('statids')
@@ -30,35 +29,39 @@ def audience_display(request):
         statids = statids.split(',')
         labels = []
         for ids in statids:
-            labels.append(Stats.objects.get(pk=int(ids)).name)
+            labels.append((str(Stats.objects.get(pk=int(ids)).name)).lower())
         return render(request, 'rtr/audience_view.html', {'labels': labels, 'size': range(len(labels))})
     else:
         return redirect(request, 'rtr/index.html')
 
 
-@login_required()
 def ask_question(request):
-    Question.objects.create(question=request.POST['question'], session=request.session.get('session'),
+    Question.objects.create(question=request.POST['question'], session=Session.objects.get(pk=request.session.get('session')),
                             time_asked=timezone.now())
+    return redirect(reverse('rtr:audience_display'))
 
 
-@login_required()
 def updateStats(request):
-    statids = request.session.get('statids').split(',')
+    statids = request.session.get('statids')
+    if statids[-1] == ',':
+        statids = statids[:len(statids) - 1]
+    statids = statids.split(',')
     for i, stats in enumerate(statids):
-        Stat.objects.create(change=request.POST['value' + str(i)], timestamp=timezone.now(),
+        Stat.objects.create(change=int(request.POST['value' + str(i)]), timestamp=timezone.now(),
                             stats=Stats.objects.get(pk=stats))
+    return redirect(reverse('rtr:audience_display'))
 
 
 def calculate_stats(stats_per_user):
     result = 0
-    for user_stat in stats_per_user:
-        changes_by_user = Stat.objects.filter(stats=user_stat)
-        total_user_change = 0
-        for single_stat in changes_by_user:
-            total_user_change += single_stat.change
-        result += total_user_change
-    result /= len(stats_per_user)
+    if stats_per_user:
+        for user_stat in stats_per_user:
+            changes_by_user = Stat.objects.filter(stats=user_stat)
+            total_user_change = 0
+            for single_stat in changes_by_user:
+                total_user_change += single_stat.change
+            result += total_user_change
+        result /= len(stats_per_user)
     return result
 
 
@@ -71,8 +74,9 @@ def get_stats(request):
         percentages = []
         for stat_on in stats:
             stats_per_user = Stats.objects.filter(session=request.session.get('session'), name=stat_on)
-            percentages.append(calculate_stats(stats_per_user))
-        return percentages
+            percentages.append(str(calculate_stats(stats_per_user)))
+        data = [{'percentages':percentages}]
+        return HttpResponse(simplejson.dumps(data), mimetype='application/json')
     else:
         return redirect(request, 'rtr/index.html')
 
@@ -80,7 +84,9 @@ def get_stats(request):
 @login_required()
 def get_questions(request):
     if request.session.get('type') == 'creater':
-        return Question.objects.filter(session=request.session.get('session'))
+        questions = Question.objects.filter(session=request.session.get('session'))
+        data = serializers.serialize('json', questions)
+        return HttpResponse(data, mimetype='application/json')
     else:
         return redirect(request, 'rtr/index.html')
 
@@ -130,10 +136,7 @@ def prof_settings(request):
         return redirect(request, 'rtr/index.html')
 
 
-def login(request):
-    if request.session.get('type') is not None:
-        if request.session.get('type') == 'creater':
-            return redirect(reverse("rtr:prof_display"))
+def loginUser(request):
     username = request.POST['username']
     password = request.POST['password']
     session = request.POST['session']
@@ -142,6 +145,7 @@ def login(request):
     if typeSession == "create":
         user = authenticate(username=username, password=password)
         if user is not None:
+            login(request, user)
             try:
                 series = Series.objects.get(series_id=session, live=False)
                 series.live = True
@@ -149,8 +153,14 @@ def login(request):
                 newSession = Session.objects.create(series=series, create_time=timezone.now(), stats_on="")
             except Series.DoesNotExist:
                 try:
-                    series = Series.objects.get(series_id=session)
-                    return render(request, 'rtr/index.html', {"error_message": "Session already in progress"})
+                    if session == 'a':
+                        request.session.__setitem__('session', str(Session.objects.get(series_id=Series.objects.get(
+                            series_id=session)).id))
+                        request.session.__setitem__('type', 'creater')
+                        return HttpResponseRedirect('/rtr/profDisplay')
+                    else:
+                        Series.objects.get(series_id=session)
+                        return render(request, 'rtr/index.html', {"error_message": "Session already in progress"})
                 except Series.DoesNotExist:
                     newSeries = Series.objects.create(series_id=session)
                     newSession = Session.objects.create(
@@ -162,8 +172,8 @@ def login(request):
             return render(request, 'rtr/index.html', {"error_message": "Incorrect Username and/or Password"})
     else:
         try:
-            Series.objects.get(series_id=session, live=True)
-            session = Session.objects.latest('create_time')
+            series = Series.objects.get(series_id=session, live=True)
+            session = Session.objects.filter(series_id=series).latest('create_time')
             stats = session.stats_on.split(",")
             stat_ids = ""
             for stat in stats:

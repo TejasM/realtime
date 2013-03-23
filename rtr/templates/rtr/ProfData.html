@@ -5,7 +5,7 @@
 		<title>Professor Data</title>
         <link rel="stylesheet" href="{{ STATIC_URL }}bootstrapSwitch.css">
         <link rel="stylesheet" href="{{ STATIC_URL }}bootstrap.css">
-        <script src="http://code.jquery.com/jquery-1.9.0.js"></script>
+        <script src="http://code.jquery.com/jquery-1.8.2.js"></script>
         <script src="http://code.jquery.com/jquery-migrate-1.1.1.js"></script>
         <link href="{{ STATIC_URL }}bootstrap-responsive.css" rel="stylesheet">
         <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}style.css" />
@@ -32,10 +32,12 @@
             };
 
             setInterval(updatePercentage, 2000);
+
             function updatePercentage() {
                 $.get('statisticsGet', function(data) {
+                    data = data[0]['percentages']
                     for(var i=0; i<data.length; i++){
-                        $('#Percent' + i.toString()).html(data[i].toFixed(2)).css('background-color', colorFromValue(data[i]));
+                        $('#Percent' + i.toString()).html(data[i]).css('background-color', colorFromValue(data[i]));
                     }
                 }).fail(function(jqXHR, textStatus, errorThrown) {
                             alert("Error" + errorThrown);
@@ -43,12 +45,12 @@
                 $.get('questions').done(function(questions) {
                     $("#List").empty();
                     $.each(questions, function(index, question) {
-                        $("#List").append("<li>" + question + "</li>");
+                        $("#List").append("<li>" + question.fields['question'] + "</li>");
                     });
                 }).fail(function(jqXHR, textStatus, errorThrown) {
                             alert("Error" + errorThrown);
-                }
-		    }
+                });
+		    };
 
         });
 		</script>
@@ -93,7 +95,6 @@
                 </form>
 			</div>
 		</div>
-        <script src="{{ STATIC_URL }}js/jquery.js"></script>
         <script src="{{ STATIC_URL }}js/bootstrap-transition.js"></script>
         <script src="{{ STATIC_URL }}js/bootstrap-alert.js"></script>
         <script src="{{ STATIC_URL }}js/bootstrap-modal.js"></script>
