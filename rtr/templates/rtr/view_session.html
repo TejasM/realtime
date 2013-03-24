@@ -12,15 +12,15 @@
         <script src="{{ STATIC_URL }}js/Chart.min.js"></script>
 		<script type="text/javascript">
         $(function () {
-            {% for x, y, label, id in changes %}
-            var ctx = $("#chart_{{ label }}_{{ id }}").get(0).getContext("2d");
+            {% for x, y, label in changes %}
+            var ctx = $("#chart_{{ label }}").get(0).getContext("2d");
             var data = {
                 labels : {{ x }},
                 datasets : [
                     {
-                        fillColor : "rgba(220,220,220,0.5)",
-                        strokeColor : "rgba(220,220,220,1)",
-                        pointColor : "rgba(220,220,220,1)",
+                        fillColor : "rgba(151,187,205,0.5)",
+                        strokeColor : "rgba(151,187,205,1)",
+                        pointColor : "rgba(151,187,205,1)",
                         pointStrokeColor : "#fff",
                         data : {{ y }}
                     }
@@ -35,10 +35,11 @@
 		<div data-role="page">
 			<div id="container">
 				<div data-role="header" class="center">
-					<h1>Session Id</h1>
+					<h1>{{ request.session.session }}</h1>
 				</div><!-- /header -->
-                {% for x, y, label, id in changes %}
-                    <canvas id="chart_{{ label }}_{{ id }}" width="800" height="400"></canvas>
+                {% for x, y, label in changes %}
+                    <label for="chart_{{ label }}"><strong>{{ label }}</strong></label>
+                    <canvas id="chart_{{ label }}" width="800" height="400"></canvas>
                 {% endfor %}
 			</div>
 		</div>

@@ -1,10 +1,11 @@
+from collections import defaultdict
 from datetime import timedelta
 from django.contrib.auth.decorators import login_required
 from django.core import serializers
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.utils import timezone, simplejson
 from django.utils.safestring import mark_safe
 
@@ -23,7 +24,7 @@ def end_session(request):
         series = Session.objects.get(pk=int(request.session['session'])).series
         series.live = False
         series.save()
-    request.session.clear()
+    logout(request)
     return redirect(reverse('rtr:index'))
 
 
@@ -175,10 +176,11 @@ def loginUser(request):
                         Series.objects.get(series_id=session)
                         return render(request, 'rtr/index.html', {"error_message": "Session already in progress"})
                 except Series.DoesNotExist:
-                    newSeries = Series.objects.create(series_id=session)
+                    newSeries = Series.objects.create(series_id=session, live=True)
                     newSession = Session.objects.create(
                         series=newSeries, create_time=timezone.now(), stats_on="")
             request.session.__setitem__('session', str(newSession.id))
+            request.session.__setitem__('session_name', session)
             request.session.__setitem__('type', 'creater')
             return HttpResponseRedirect(reverse("rtr:prof_settings"))
         else:
@@ -186,12 +188,14 @@ def loginUser(request):
     elif typeSession == "join":
         try:
             series = Series.objects.get(series_id=session, live=True)
+            session_name = session
             session = Session.objects.filter(series_id=series).latest('create_time')
             stats = session.stats_on.split(",")
             stat_ids = ""
             for stat in stats:
                 newStats = Stats.objects.create(session=session, name=stat)
                 stat_ids += str(newStats.id) + ","
+            request.session.__setitem__('session_name', session_name)
             request.session.__setitem__('session', str(session.id))
             request.session.__setitem__('type', 'joiner')
             request.session.__setitem__('statids', stat_ids)
@@ -207,6 +211,7 @@ def loginUser(request):
                     series = Series.objects.get(series_id=session)
                 except Series.DoesNotExist:
                     return render(request, 'rtr/index.html', {"error_message": "No Such Session"})
+                request.session.__setitem__('session', str(session))
                 return HttpResponseRedirect('/rtr/viewSeries/' + str(series.id))
             else:
                 return render(request, 'rtr/index.html', {"error_message": "Incorrect Username and/or Password"})
@@ -232,44 +237,55 @@ def view_session(request, session_id):
         stats = Stats.objects.filter(session=session)
         context = {}
         changes = []
-        # groups_of_stats = {}
-        # for stat in stats:
-        #     groups_of_stats.get(stat.name, []).append(stat)
-
+        groups_of_stats = defaultdict(list)
         for stat in stats:
-            total_change = all_changes(stat)
+            groups_of_stats[stat.name].append(stat)
+
+        for key, value in groups_of_stats.iteritems():
+            groups_of_stats[key] = group_stats(value)
+
+        for label, stat in groups_of_stats.iteritems():
+            total_change = all_changes(stat, label)
             if total_change:
                 changes.append(total_change)
         context['changes'] = changes
+        request.session.__setitem__('session', str(session.series.series_id + " : " +
+                                                   session.create_time.strftime("%A %d, %B %Y")))
         return render(request, 'rtr/view_session.html', context)
     except Session.DoesNotExist:
         return redirect(reverse('rtr:index'))
 
 
+def group_stats(stats):
+    individual_changes = []
+    for per_user_stat in stats:
+        per_user_individual_changes = Stat.objects.filter(stats=per_user_stat)
+        for change in per_user_individual_changes:
+            new_stat = Stat()
+            new_stat.change = change.change
+            new_stat.timestamp = change.timestamp
+            individual_changes.append(new_stat)
+    return sorted(individual_changes, key=lambda x: x.timestamp)
 
 
-
-def all_changes(stat):
-    individual_changes = Stat.objects.filter(stats=stat).order_by('timestamp')
+def all_changes(individual_changes, label):
     if individual_changes:
-        end_time = individual_changes.reverse()[0].timestamp
-        delta = (end_time - individual_changes[0].timestamp).total_seconds() / 600
+        end_time = (individual_changes[::-1])[0].timestamp
+        init_time = individual_changes[0].timestamp
+        delta = (end_time - init_time).total_seconds() / 600
         x = []
         y = []
-        last_time = None
         net_change_over_interval = 0
+        index = 1
         for change in individual_changes:
-            if last_time and (last_time + timedelta(minutes=delta)) < change.timestamp:
+            if change.timestamp - init_time - (index * timedelta(minutes=delta)) < timedelta(minutes=0):
                 net_change_over_interval += change.change
             else:
-                if last_time:
-                    x.append(str(last_time.hour) + ":" + str(last_time.minute))
-                else:
-                    x.append(str(change.timestamp.hour) + ":" + str(change.timestamp.minute))
-                y.append(net_change_over_interval + change.change)
-                net_change_over_interval = 0
-                last_time = change.timestamp
+                x.append(str((init_time + (index * timedelta(minutes=delta))).strftime("%I:%M %p")))
+                y.append(net_change_over_interval)
+                net_change_over_interval = change.change
+                index += 1
 
-        return tuple((mark_safe(x), y, stat.name, stat.id))
+        return tuple((mark_safe(x), y, label))
     else:
         return None
