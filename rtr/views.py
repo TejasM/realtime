@@ -253,7 +253,7 @@ def all_changes(stat):
     individual_changes = Stat.objects.filter(stats=stat).order_by('timestamp')
     if individual_changes:
         end_time = individual_changes.reverse()[0].timestamp
-        delta = (end_time - individual_changes[0].timestamp).total_seconds() * 6
+        delta = (end_time - individual_changes[0].timestamp).total_seconds() / 600
         x = []
         y = []
         last_time = None
