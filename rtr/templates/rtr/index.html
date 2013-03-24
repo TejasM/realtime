@@ -14,9 +14,15 @@
 			$('.nav-tabs').button();
 			
 			$('#type_session').change(function() {
-				$(".btn-group").toggle();
-				$("#username_div").toggle();
-				$("#password_div").toggle();
+                if (this.value=='join'){
+                    $(".btn-group").hide();
+                    $("#username_div").hide();
+                    $("#password_div").hide();
+                } else {
+                    $(".btn-group").show();
+                    $("#username_div").show();
+                    $("#password_div").show();
+                }
 			});
 			
 			$("#reg_btn").click(function() {
@@ -72,6 +78,7 @@
 							<select id="type_session" name="type_session">
 								<option id="create_option" value="create">Create Session</option>
 								<option id="join_option" value="join">Join Session</option>
+                                <option id="view_sessions" value="view">View Session Data</option>
 							</select>
 						</div>
 					</div>

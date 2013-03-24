@@ -1,3 +1,4 @@
+from datetime import timedelta
 from django.contrib.auth.decorators import login_required
 from django.core import serializers
 from django.core.urlresolvers import reverse
@@ -5,6 +6,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.utils import timezone, simplejson
+from django.utils.safestring import mark_safe
 
 from rtr.models import Session, Series, Stats, Question, Stat
 
@@ -40,7 +42,8 @@ def audience_display(request):
 
 
 def ask_question(request):
-    Question.objects.create(question=request.POST['question'], session=Session.objects.get(pk=request.session.get('session')),
+    Question.objects.create(question=request.POST['question'],
+                            session=Session.objects.get(pk=request.session.get('session')),
                             time_asked=timezone.now())
     return redirect(reverse('rtr:audience_display'))
 
@@ -79,7 +82,7 @@ def get_stats(request):
         for stat_on in stats:
             stats_per_user = Stats.objects.filter(session=request.session.get('session'), name=stat_on)
             percentages.append(str(calculate_stats(stats_per_user)))
-        data = [{'percentages':percentages}]
+        data = [{'percentages': percentages}]
         return HttpResponse(simplejson.dumps(data), mimetype='application/json')
     else:
         return redirect(request, 'rtr/index.html')
@@ -133,7 +136,7 @@ def prof_start_display(request):
     if not session.stats_on.__contains__('Understanding') and not session.stats_on.__contains__('Interest'):
         return redirect(reverse("rtr:prof_settings"), {"error_message": "Select at least one of the stats"})
     if session.stats_on[-1] == ",":
-        session.series = session.stats_on[:len(session.stats_on)-1]
+        session.series = session.stats_on[:len(session.stats_on) - 1]
     session.save()
     return HttpResponseRedirect('/rtr/profDisplay')
 
@@ -180,7 +183,7 @@ def loginUser(request):
             return HttpResponseRedirect(reverse("rtr:prof_settings"))
         else:
             return render(request, 'rtr/index.html', {"error_message": "Incorrect Username and/or Password"})
-    else:
+    elif typeSession == "join":
         try:
             series = Series.objects.get(series_id=session, live=True)
             session = Session.objects.filter(series_id=series).latest('create_time')
@@ -195,3 +198,78 @@ def loginUser(request):
             return redirect(reverse('rtr:audience_display'))
         except Series.DoesNotExist:
             return render(request, 'rtr/index.html', {"error_message": "Incorrect session, not currently running"})
+    elif typeSession == 'view':
+        try:
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                login(request, user)
+                try:
+                    series = Series.objects.get(series_id=session)
+                except Series.DoesNotExist:
+                    return render(request, 'rtr/index.html', {"error_message": "No Such Session"})
+                return HttpResponseRedirect('/rtr/viewSeries/' + str(series.id))
+            else:
+                return render(request, 'rtr/index.html', {"error_message": "Incorrect Username and/or Password"})
+        except Series.DoesNotExist:
+            return render(request, 'rtr/index.html', {"error_message": "Incorrect session, not currently running"})
+    else:
+        return render(request, 'rtr/index.html', {"error_message": "Something Very Wrong Happened"})
+
+
+@login_required()
+def view_series(request, series_id):
+    try:
+        sessions = Session.objects.filter(series_id=Series.objects.get(pk=series_id))
+        return render(request, 'rtr/view_series.html', {"Sessions": sessions})
+    except Series.DoesNotExist:
+        return redirect(reverse('rtr:index'))
+
+
+@login_required()
+def view_session(request, session_id):
+    try:
+        session = Session.objects.get(pk=session_id)
+        stats = Stats.objects.filter(session=session)
+        context = {}
+        changes = []
+        # groups_of_stats = {}
+        # for stat in stats:
+        #     groups_of_stats.get(stat.name, []).append(stat)
+
+        for stat in stats:
+            total_change = all_changes(stat)
+            if total_change:
+                changes.append(total_change)
+        context['changes'] = changes
+        return render(request, 'rtr/view_session.html', context)
+    except Session.DoesNotExist:
+        return redirect(reverse('rtr:index'))
+
+
+
+
+
+def all_changes(stat):
+    individual_changes = Stat.objects.filter(stats=stat).order_by('timestamp')
+    if individual_changes:
+        end_time = individual_changes.reverse()[0].timestamp
+        delta = (end_time - individual_changes[0].timestamp).total_seconds() * 6
+        x = []
+        y = []
+        last_time = None
+        net_change_over_interval = 0
+        for change in individual_changes:
+            if last_time and (last_time + timedelta(minutes=delta)) < change.timestamp:
+                net_change_over_interval += change.change
+            else:
+                if last_time:
+                    x.append(str(last_time.hour) + ":" + str(last_time.minute))
+                else:
+                    x.append(str(change.timestamp.hour) + ":" + str(change.timestamp.minute))
+                y.append(net_change_over_interval + change.change)
+                net_change_over_interval = 0
+                last_time = change.timestamp
+
+        return tuple((mark_safe(x), y, stat.name, stat.id))
+    else:
+        return None
