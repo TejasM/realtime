@@ -23,6 +23,13 @@
                     <li><a href="/rtr/viewSession/{{ session.id }}">Session{{ forloop.counter }}</a>: Created - {{ session.create_time }}</li>
                 {% endfor %}
                 </ul>
+
+                {% if messages %}
+                    <p></p>
+                    {% for message in messages %}
+                        <p class="text-error">{{ message }}</p>
+                    {% endfor %}
+                {% endif %}
 			</div>
 		</div>
 

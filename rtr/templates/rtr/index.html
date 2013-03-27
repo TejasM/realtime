@@ -13,33 +13,25 @@
 		$(document).ready(function() {
 			$('.nav-tabs').button();
 			
-			$('#type_session').change(function() {
-                if (this.value=='join'){
-                    $(".btn-group").hide();
-                    $("#username_div").hide();
-                    $("#password_div").hide();
-                } else {
-                    $(".btn-group").show();
-                    $("#username_div").show();
-                    $("#password_div").show();
-                }
-			});
-			
 			$("#reg_btn").click(function() {
-					var e = document.getElementById("type_session");
-					e.selectedIndex = 0;
-					$("#create_option").show();
-					$("#username_div").show();
-					$("#password_div").show();
-			});
+                var e = document.getElementById("type_session");
+                e.selectedIndex = 0;
+                $("#create_option").show();
+                $("#username_div").show();
+                $("#password_div").show();
+                $("#view_sessions").show();
+                $("#btn_input").value = this.value
+            });
 			
 			$("#anon_btn").click(function() {
-					var e = document.getElementById("type_session");
-					e.selectedIndex = 1;
-					$("#create_option").hide();
-					$("#username_div").hide();
-					$("#password_div").hide();
-			});
+                var e = document.getElementById("type_session");
+                e.selectedIndex = 1;
+                $("#create_option").hide();
+                $("#username_div").hide();
+                $("#password_div").hide();
+                $("#view_sessions").hide();
+                $("#btn_input").val(this.value)
+            });
 			
 		});
 	</script>
@@ -47,7 +39,6 @@
 	<body>
 		<div data-role="page">
 			<div id="container">
-                {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
                 <form action="login/" class="form-horizontal" method="post">
                     {% csrf_token %}
 					<fieldset>
@@ -61,7 +52,7 @@
 					<div class="control-group" id="password_div">
 						<label class="control-label" for="password">Password:</label>
 						<div class="controls">
-							<input type="text" name="password" id="password" value=""  />
+							<input type="text" name="password" id="password" value="" />
 						</div>
 					</div>
 					
@@ -89,7 +80,14 @@
 					</div>
 					<input type="hidden" name="optionLogin" value="registered" id="btn_input" />
 
-					<div class="form-actions">
+                    {% if messages %}
+                        <p></p>
+                        {% for message in messages %}
+                            <p class="text-error">{{ message }}</p>
+                        {% endfor %}
+                    {% endif %}
+
+                    <div class="form-actions">
 						<button type="submit" class="btn btn-primary" class="btn">Login</button>
 					</div>
 				</form>

@@ -1,5 +1,7 @@
 from collections import defaultdict
 from datetime import timedelta
+from functools import wraps
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core import serializers
 from django.core.urlresolvers import reverse
@@ -16,7 +18,14 @@ def index(request):
     if request.session.get('type') is not None:
         if request.session.get('type') == 'creater':
             return HttpResponseRedirect('profDisplay')
+        elif request.session.get('type') == 'join':
+            return HttpResponseRedirect('audience_view')
     return render(request, 'rtr/index.html')
+
+
+def error(request):
+    request.session.clear()
+    return redirect(reverse('rtr:index'))
 
 
 def end_session(request):
@@ -36,12 +45,26 @@ def audience_display(request):
         statids = statids.split(',')
         labels = []
         for ids in statids:
-            labels.append((str(Stats.objects.get(pk=int(ids)).name)).lower())
+            labels.append((str(Stats.objects.get(pk=int(ids)).name)))
         return render(request, 'rtr/audience_view.html', {'labels': labels, 'size': range(len(labels))})
     else:
         return redirect(request, 'rtr/index.html')
 
 
+def check_session(f):
+    @wraps(f)
+    def wrapper(request, *args, **kwds):
+        session = Session.objects.get(pk=request.session.get('session'))
+        if session.series.live:
+            return f(request, *args, **kwds)
+        else:
+            messages.error(request, "Session has now ended")
+            request.session.clear()
+            raise Exception("Session has ended")
+    return wrapper
+
+
+@check_session
 def ask_question(request):
     Question.objects.create(question=request.POST['question'],
                             session=Session.objects.get(pk=request.session.get('session')),
@@ -49,6 +72,7 @@ def ask_question(request):
     return redirect(reverse('rtr:audience_display'))
 
 
+@check_session
 def updateStats(request):
     statids = request.session.get('statids')
     if statids[-1] == ',':
@@ -84,7 +108,7 @@ def get_stats(request):
             stats_per_user = Stats.objects.filter(session=request.session.get('session'), name=stat_on)
             percentages.append(str(calculate_stats(stats_per_user)))
         data = [{'percentages': percentages}]
-        return HttpResponse(simplejson.dumps(data), mimetype='application/json')
+        return HttpResponse(simplejson.dumps(data), content_type='application/json')
     else:
         return redirect(request, 'rtr/index.html')
 
@@ -114,7 +138,7 @@ def prof_display(request):
         for i, stat in enumerate(stats_on):
             labels.append(stat.title())
         context['labels'] = labels
-        return render(request, 'rtr/ProfData.html', context)
+        return render(request, 'rtr/prof_data.html', context)
     else:
         return redirect(request, 'rtr/index.html')
 
@@ -124,17 +148,17 @@ def prof_start_display(request):
     session = Session.objects.get(pk=request.session.get('session'))
     try:
         _ = request.POST['understanding_toggle']
-        if not session.stats_on.__contains__('Understanding'):
+        if not 'Understanding' in session.stats_on:
             session.stats_on += 'Understanding,'
     except Exception as _:
         pass
     try:
         _ = request.POST['interest_toggle']
-        if not session.stats_on.__contains__('Interest'):
+        if not 'Interest' in session.stats_on:
             session.stats_on += 'Interest,'
     except Exception as _:
         pass
-    if not session.stats_on.__contains__('Understanding') and not session.stats_on.__contains__('Interest'):
+    if not 'Understanding' in session.stats_on and not 'Interest' in session.stats_on:
         return redirect(reverse("rtr:prof_settings"), {"error_message": "Select at least one of the stats"})
     if session.stats_on[-1] == ",":
         session.stats_on = session.stats_on[:len(session.stats_on) - 1]
@@ -151,40 +175,52 @@ def prof_settings(request):
 
 
 def loginUser(request):
-    username = request.POST['username']
-    password = request.POST['password']
-    session = request.POST['session']
-    typeSession = request.POST['type_session']
-    typeLogin = request.POST['optionLogin']
-    if typeSession == "create":
-        user = authenticate(username=username, password=password)
-        if user is not None:
-            login(request, user)
-            try:
-                series = Series.objects.get(series_id=session, live=False)
-                series.live = True
-                series.save()
-                newSession = Session.objects.create(series=series, create_time=timezone.now(), stats_on="")
-            except Series.DoesNotExist:
-                try:
-                    if session == 'a':
-                        request.session.__setitem__('session', str(Session.objects.get(series_id=Series.objects.get(
-                            series_id=session)).id))
-                        request.session.__setitem__('type', 'creater')
-                        return HttpResponseRedirect('/rtr/profDisplay')
-                    else:
-                        Series.objects.get(series_id=session)
-                        return render(request, 'rtr/index.html', {"error_message": "Session already in progress"})
-                except Series.DoesNotExist:
-                    newSeries = Series.objects.create(series_id=session, live=True)
-                    newSession = Session.objects.create(
-                        series=newSeries, create_time=timezone.now(), stats_on="")
-            request.session.__setitem__('session', str(newSession.id))
-            request.session.__setitem__('session_name', session)
-            request.session.__setitem__('type', 'creater')
-            return HttpResponseRedirect(reverse("rtr:prof_settings"))
+    #Collect post data
+    username = request.POST.get('username', '')
+    password = request.POST.get('password', '')
+    session = request.POST.get('session', '')
+    typeSession = request.POST.get('type_session', '')
+    typeLogin = request.POST.get('optionLogin', '')
+
+    #Validate Post Data
+    if session == '':
+        messages.error(request, "Need to specify session id")
+
+    user = None
+    if typeLogin == 'registered' or (typeSession == "create" or typeSession == "view"):
+        if username == '' or password == '':
+            messages.error(request, "Need both password and username for registered login")
+            return redirect(reverse('rtr:index'))
+        #Check user authentication if required:
         else:
-            return render(request, 'rtr/index.html', {"error_message": "Incorrect Username and/or Password"})
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                login(request, user)
+            else:
+                messages.error(request, "Incorrect Username and/or Password")
+                return redirect(reverse('rtr:index'))
+
+    #Redirect to where asked
+    if typeSession == "create":
+        try:
+            series = Series.objects.get(series_id=session, live=False)
+            series.live = True
+            series.save()
+            newSession = Session.objects.create(series=series, create_time=timezone.now(), stats_on="")
+        except Series.DoesNotExist:
+            try:
+                Series.objects.get(series_id=session)
+                messages.error(request, "Session already in progress")
+                return HttpResponseRedirect('rtr/index.html')
+            except Series.DoesNotExist:
+                newSeries = Series.objects.create(series_id=session, live=True)
+                newSession = Session.objects.create(
+                    series=newSeries, create_time=timezone.now(), stats_on="", user=user)
+        request.session['session'] = str(newSession.id)
+        request.session['session_name'] = session
+        request.session['type'] = 'creater'
+        return HttpResponseRedirect(reverse("rtr:prof_settings"))
+
     elif typeSession == "join":
         try:
             series = Series.objects.get(series_id=session, live=True)
@@ -195,30 +231,30 @@ def loginUser(request):
             for stat in stats:
                 newStats = Stats.objects.create(session=session, name=stat)
                 stat_ids += str(newStats.id) + ","
-            request.session.__setitem__('session_name', session_name)
-            request.session.__setitem__('session', str(session.id))
-            request.session.__setitem__('type', 'joiner')
-            request.session.__setitem__('statids', stat_ids)
+            request.session['session_name'] = session_name
+            request.session['session'] = str(session.id)
+            request.session['type'] = 'joiner'
+            request.session['statids'] = stat_ids
             return redirect(reverse('rtr:audience_display'))
         except Series.DoesNotExist:
-            return render(request, 'rtr/index.html', {"error_message": "Incorrect session, not currently running"})
+            messages.error(request, "Incorrect session, not currently running")
+            return redirect(reverse('rtr:index'))
+
     elif typeSession == 'view':
         try:
-            user = authenticate(username=username, password=password)
-            if user is not None:
-                login(request, user)
-                try:
-                    series = Series.objects.get(series_id=session)
-                except Series.DoesNotExist:
-                    return render(request, 'rtr/index.html', {"error_message": "No Such Session"})
-                request.session.__setitem__('session', str(session))
-                return HttpResponseRedirect('/rtr/viewSeries/' + str(series.id))
-            else:
-                return render(request, 'rtr/index.html', {"error_message": "Incorrect Username and/or Password"})
+            try:
+                series = Series.objects.get(series_id=session)
+            except Series.DoesNotExist:
+                messages.error(request, "No Such Session")
+                return redirect(reverse('rtr:index'))
+            request.session['session'] = str(session)
+            return HttpResponseRedirect('/rtr/viewSeries/' + str(series.id))
         except Series.DoesNotExist:
-            return render(request, 'rtr/index.html', {"error_message": "Incorrect session, not currently running"})
+            messages.error(request, "Incorrect session, not currently running")
+            return redirect(reverse('rtr:index'))
     else:
-        return render(request, 'rtr/index.html', {"error_message": "Something Very Wrong Happened"})
+        messages.error(request, "Something Very Wrong Happened")
+        return redirect(reverse('rtr:index'))
 
 
 @login_required()
@@ -234,6 +270,9 @@ def view_series(request, series_id):
 def view_session(request, session_id):
     try:
         session = Session.objects.get(pk=session_id)
+        if not session.user == request.user:
+            messages.error(request, "You did not create that session")
+            return HttpResponseRedirect('/rtr/viewSeries/' + str(session.series.id))
         stats = Stats.objects.filter(session=session)
         context = {}
         changes = []
@@ -249,8 +288,8 @@ def view_session(request, session_id):
             if total_change:
                 changes.append(total_change)
         context['changes'] = changes
-        request.session.__setitem__('session', str(session.series.series_id + " : " +
-                                                   session.create_time.strftime("%A %d, %B %Y")))
+        request.session['session'] = str(session.series.series_id + " : " +
+                                         session.create_time.strftime("%A %d, %B %Y"))
         return render(request, 'rtr/view_session.html', context)
     except Session.DoesNotExist:
         return redirect(reverse('rtr:index'))

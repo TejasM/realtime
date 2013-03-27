@@ -1,9 +1,12 @@
-from django.conf.urls import patterns, include, url
+from django.conf.urls import patterns, include, url, handler500
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
+import rtr
 
 admin.autodiscover()
+
+handler500 = rtr.views.error
 
 urlpatterns = patterns('',
     # Examples:

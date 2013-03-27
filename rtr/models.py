@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.db import models
 
 
@@ -10,6 +11,7 @@ class Session(models.Model):
     series = models.ForeignKey(Series)
     create_time = models.DateTimeField('date published')
     stats_on = models.CharField(max_length=200)
+    user = models.ForeignKey(User)
 
     def __unicode__(self):
         return self.series.series_id
