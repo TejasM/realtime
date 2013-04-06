@@ -12,6 +12,8 @@ class Session(models.Model):
     create_time = models.DateTimeField('date published')
     stats_on = models.CharField(max_length=200)
     user = models.ForeignKey(User)
+    cur_num = models.IntegerField(default=0)
+    max_num = models.IntegerField(default=0)
 
     def __unicode__(self):
         return self.series.series_id

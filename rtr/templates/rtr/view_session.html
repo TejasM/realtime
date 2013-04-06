@@ -1,92 +1,92 @@
 <!DOCTYPE html>
+{% extends "template.html" %}
 <html>
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Professor Settings</title>
-    <link rel="stylesheet" href="{{ STATIC_URL }}bootstrapSwitch.css">
-    <link rel="stylesheet" href="{{ STATIC_URL }}css/bootstrap.css">
-    <script src="http://code.jquery.com/jquery-1.8.2.js"></script>
-    <script src="http://code.jquery.com/jquery-migrate-1.1.1.js"></script>
-    <link href="{{ STATIC_URL }}bootstrap-responsive.css" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}style.css"/>
-    <link href="{{ STATIC_URL }}css/responsive.css" rel="stylesheet"/>
+    {% block addtionalHeader %}
+        <title>Professor Settings</title>
+        <link rel="stylesheet" href="{{ STATIC_URL }}bootstrapSwitch.css">
+        <link rel="stylesheet" href="{{ STATIC_URL }}css/bootstrap.css">
+        <script src="http://code.jquery.com/jquery-1.8.2.js"></script>
+        <script src="http://code.jquery.com/jquery-migrate-1.1.1.js"></script>
+        <link href="{{ STATIC_URL }}bootstrap-responsive.css" rel="stylesheet">
+        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}style.css"/>
+        <link href="{{ STATIC_URL }}css/responsive.css" rel="stylesheet"/>
 
-    <!-- Flexslider -->
-    <link href="{{ STATIC_URL }}css/flexslider.css" rel="stylesheet"/>
+        <!-- Flexslider -->
+        <link href="{{ STATIC_URL }}css/flexslider.css" rel="stylesheet"/>
 
-    <!-- Theme style -->
-    <link href="{{ STATIC_URL }}css/theme-style.css" rel="stylesheet"/>
+        <!-- Theme style -->
+        <link href="{{ STATIC_URL }}css/theme-style.css" rel="stylesheet"/>
 
-    <!--Your custom colour override-->
-    <link href="#" id="colour-scheme" rel="stylesheet"/>
+        <!--Your custom colour override-->
+        <link href="#" id="colour-scheme" rel="stylesheet"/>
 
-    <!-- Your custom override -->
-    <link href="{{ STATIC_URL }}css/custom-style.css" rel="stylesheet"/>
+        <!-- Your custom override -->
+        <link href="{{ STATIC_URL }}css/custom-style.css" rel="stylesheet"/>
 
-    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
-    <!--[if lt IE 9]>
+        <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+        <!--[if lt IE 9]>
       <script src="js/html5.js"></script>
     <![endif]-->
 
-    <!-- Le fav and touch icons - @todo: fill with your icons or remove -->
-    <link rel="shortcut icon" href="img/icons/favicon.png"/>
-    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="img/icons/114x114.png"/>
-    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="img/icons/72x72.png"/>
-    <link rel="apple-touch-icon-precomposed" href="img/icons/default.png"/>
-    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700,300|Rambla|Calligraffitti' rel='stylesheet'
-          type='text/css'/>
-    <script src="{{ STATIC_URL }}js/Chart.min.js"></script>
-    <script type="text/javascript">
-        $(function () {
-            {% for x, y, label in changes %}
-                var ctx = $("#chart_{{ label }}").get(0).getContext("2d");
-                var data = {
-                    labels: {{ x }},
-                    datasets: [
-                        {
-                            fillColor: "rgba(151,187,205,0.5)",
-                            strokeColor: "rgba(151,187,205,1)",
-                            pointColor: "rgba(151,187,205,1)",
-                            pointStrokeColor: "#fff",
-                            data: {{ y }}
-                        }
-                    ]
-                }
-                var myNewChart = new Chart(ctx).Line(data);
-            {% endfor %}
-        });
-    </script>
+        <!-- Le fav and touch icons - @todo: fill with your icons or remove -->
+        <link rel="shortcut icon" href="img/icons/favicon.png"/>
+        <link rel="apple-touch-icon-precomposed" sizes="114x114" href="img/icons/114x114.png"/>
+        <link rel="apple-touch-icon-precomposed" sizes="72x72" href="img/icons/72x72.png"/>
+        <link rel="apple-touch-icon-precomposed" href="img/icons/default.png"/>
+        <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700,300|Rambla|Calligraffitti' rel='stylesheet'
+              type='text/css'/>
+        <script src="{{ STATIC_URL }}js/Chart.min.js"></script>
+        <script type="text/javascript">
+            $(function () {
+                {% for x, y, label in changes %}
+                    var ctx = $("#chart_{{ label }}").get(0).getContext("2d");
+                    var data = {
+                        labels: {{ x }},
+                        datasets: [
+                            {
+                                fillColor: "rgba(151,187,205,0.5)",
+                                strokeColor: "rgba(151,187,205,1)",
+                                pointColor: "rgba(151,187,205,1)",
+                                pointStrokeColor: "#fff",
+                                data: {{ y }}
+                            }
+                        ]
+                    }
+                    var myNewChart = new Chart(ctx).Line(data);
+                {% endfor %}
+            });
+        </script>
+    {% endblock %}
 </head>
 <body>
-{% include "template.html" %}
-<div id="content">
-    <div class="container">
-        <div data-role="page">
-            <div id="container">
-                <div data-role="header" class="center">
-                    <h1>{{ request.session.session }}</h1>
-                </div>
-                <!-- /header -->
-                {% for x, y, label in changes %}
-                    <label for="chart_{{ label }}"><strong>{{ label }}</strong></label>
-                    <canvas id="chart_{{ label }}" width="800" height="400"></canvas>
-                {% endfor %}
-            </div>
+{% block content %}
+    <div data-role="page">
+        <div data-role="header" class="center">
+            <h1>{{ request.session.session }}</h1>
         </div>
+        <!-- /header -->
+        {% for x, y, label in changes %}
+            <label for="chart_{{ label }}"><strong>{{ label }}</strong></label>
+            <canvas id="chart_{{ label }}" width="800" height="400"></canvas>
+        {% endfor %}
     </div>
-</div>
-<script src="{{ STATIC_URL }}js/bootstrap-transition.js"></script>
-<script src="{{ STATIC_URL }}js/bootstrap-alert.js"></script>
-<script src="{{ STATIC_URL }}js/bootstrap-modal.js"></script>
-<script src="{{ STATIC_URL }}js/bootstrap-dropdown.js"></script>
-<script src="{{ STATIC_URL }}js/bootstrap-scrollspy.js"></script>
-<script src="{{ STATIC_URL }}js/bootstrap-tab.js"></script>
-<script src="{{ STATIC_URL }}js/bootstrap-tooltip.js"></script>
-<script src="{{ STATIC_URL }}js/bootstrap-popover.js"></script>
-<script src="{{ STATIC_URL }}js/bootstrap-button.js"></script>
-<script src="{{ STATIC_URL }}js/bootstrap-collapse.js"></script>
-<script src="{{ STATIC_URL }}js/bootstrap-carousel.js"></script>
-<script src="{{ STATIC_URL }}js/bootstrap-typeahead.js"></script>
-<script src="{{ STATIC_URL }}js/bootstrapSwitch.js"></script>
+{% endblock %}
+
+{% block endscript %}
+    <script src="{{ STATIC_URL }}js/bootstrap-transition.js"></script>
+    <script src="{{ STATIC_URL }}js/bootstrap-alert.js"></script>
+    <script src="{{ STATIC_URL }}js/bootstrap-modal.js"></script>
+    <script src="{{ STATIC_URL }}js/bootstrap-dropdown.js"></script>
+    <script src="{{ STATIC_URL }}js/bootstrap-scrollspy.js"></script>
+    <script src="{{ STATIC_URL }}js/bootstrap-tab.js"></script>
+    <script src="{{ STATIC_URL }}js/bootstrap-tooltip.js"></script>
+    <script src="{{ STATIC_URL }}js/bootstrap-popover.js"></script>
+    <script src="{{ STATIC_URL }}js/bootstrap-button.js"></script>
+    <script src="{{ STATIC_URL }}js/bootstrap-collapse.js"></script>
+    <script src="{{ STATIC_URL }}js/bootstrap-carousel.js"></script>
+    <script src="{{ STATIC_URL }}js/bootstrap-typeahead.js"></script>
+    <script src="{{ STATIC_URL }}js/bootstrapSwitch.js"></script>
+{% endblock %}
 </body>
 </html>

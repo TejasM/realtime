@@ -33,6 +33,10 @@ def end_session(request):
         series = Session.objects.get(pk=int(request.session['session'])).series
         series.live = False
         series.save()
+    elif request.session.get('type') == 'join':
+        session = Session.objects.get(pk=int(request.session['session']))
+        session.cur_num -= 1
+        session.save()
     logout(request)
     return redirect(reverse('rtr:index'))
 
@@ -108,6 +112,23 @@ def get_stats(request):
             stats_per_user = Stats.objects.filter(session=request.session.get('session'), name=stat_on)
             percentages.append(str(calculate_stats(stats_per_user)))
         data = [{'percentages': percentages}]
+        return HttpResponse(simplejson.dumps(data), content_type='application/json')
+    else:
+        return redirect(request, 'rtr/index.html')
+
+
+@login_required()
+def get_all(request):
+    if request.session.get('type') == 'creater':
+        #Why are we getting stat object
+        session = Session.objects.get(pk=request.session.get('session'))
+        stats = session.stats_on.split(",")
+        percentages = []
+        for stat_on in stats:
+            stats_per_user = Stats.objects.filter(session=request.session.get('session'), name=stat_on)
+            percentages.append(str(calculate_stats(stats_per_user)))
+        questions = Question.objects.filter(session=request.session.get('session'))
+        data = [{'percentages': percentages, 'questions': list(questions), 'count': session.cur_num}]
         return HttpResponse(simplejson.dumps(data), content_type='application/json')
     else:
         return redirect(request, 'rtr/index.html')
@@ -211,7 +232,8 @@ def loginUser(request):
             try:
                 Series.objects.get(series_id=session)
                 messages.error(request, "Session already in progress")
-                return HttpResponseRedirect('rtr/index.html')
+                logout(request)
+                return redirect(reverse('rtr:index'))
             except Series.DoesNotExist:
                 newSeries = Series.objects.create(series_id=session, live=True)
                 newSession = Session.objects.create(
@@ -219,13 +241,17 @@ def loginUser(request):
         request.session['session'] = str(newSession.id)
         request.session['session_name'] = session
         request.session['type'] = 'creater'
-        return HttpResponseRedirect(reverse("rtr:prof_settings"))
+        return redirect(reverse("rtr:prof_settings"))
 
     elif typeSession == "join":
         try:
             series = Series.objects.get(series_id=session, live=True)
             session_name = session
             session = Session.objects.filter(series_id=series).latest('create_time')
+            session.cur_num += 1
+            if session.cur_num > session.max_num:
+                session.max_num = session.cur_num
+            session.save()
             stats = session.stats_on.split(",")
             stat_ids = ""
             for stat in stats:
@@ -238,6 +264,8 @@ def loginUser(request):
             return redirect(reverse('rtr:audience_display'))
         except Series.DoesNotExist:
             messages.error(request, "Incorrect session, not currently running")
+            if user is not None:
+                logout(request)
             return redirect(reverse('rtr:index'))
 
     elif typeSession == 'view':
@@ -251,9 +279,12 @@ def loginUser(request):
             return HttpResponseRedirect('/rtr/viewSeries/' + str(series.id))
         except Series.DoesNotExist:
             messages.error(request, "Incorrect session, not currently running")
+            logout(request)
             return redirect(reverse('rtr:index'))
     else:
         messages.error(request, "Something Very Wrong Happened")
+        if user is not None:
+            logout(request)
         return redirect(reverse('rtr:index'))
 
 

@@ -1,4 +1,6 @@
 # Create your views here.
+from functools import wraps
+from django.contrib import messages
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.shortcuts import render, redirect
@@ -40,6 +42,33 @@ def team(request):
     return render(request, 'index/team.html')
 
 
+def validateEmail(email):
+    from django.core.validators import validate_email
+    from django.core.exceptions import ValidationError
+    try:
+        validate_email( email )
+        return True
+    except ValidationError:
+        return False
+
+
+def check_input(f):
+    @wraps(f)
+    def wrapper(request, *args, **kwds):
+        email_address = request.POST['email_address']
+        username = request.POST['username']
+        if not validateEmail(email_address):
+            messages.error(request, "Invalid email address")
+            return redirect(reverse("signup"))
+        try:
+            User.objects.get(username=username)
+            messages.error(request, "Username already exists, try another name")
+            return redirect(reverse("signup"))
+        except User.DoesNotExist:
+            pass
+    return wrapper
+
+@check_input
 def signup_post(request):
     username = request.POST['username']
     password = request.POST['password']
@@ -48,9 +77,9 @@ def signup_post(request):
     last_name = request.POST['last_name']
     term = request.POST['term']
 
-    if term is "off":
+    if term is not "term":
         return redirect(reverse("signup"))
 
     User.objects.create(username=username, password=password, email=email_address, first_name=first_name,
                         last_name=last_name)
-    return redirect(reverse("signup"))
+    return redirect(reverse("rtr:index"))

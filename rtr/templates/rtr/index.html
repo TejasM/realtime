@@ -1,155 +1,117 @@
 <!DOCTYPE html>
+{% extends "template.html" %}
 <html>
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-    <link rel="stylesheet" href="{{ STATIC_URL }}bootstrap.css">
-    <script src="http://code.jquery.com/jquery-1.8.2.js"></script>
-    <script src="http://code.jquery.com/jquery-migrate-1.1.1.js"></script>
-    <link href="{{ STATIC_URL }}bootstrap-responsive.css" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}style.css"/>
-    <link href="{{ STATIC_URL }}css/responsive.css" rel="stylesheet"/>
-
-    <!-- Flexslider -->
-    <link href="{{ STATIC_URL }}css/flexslider.css" rel="stylesheet"/>
-
-    <!-- Theme style -->
-    <link href="{{ STATIC_URL }}css/theme-style.css" rel="stylesheet"/>
-
-    <!--Your custom colour override-->
-    <link href="#" id="colour-scheme" rel="stylesheet"/>
-
-    <!-- Your custom override -->
-    <link href="{{ STATIC_URL }}css/custom-style.css" rel="stylesheet"/>
-
-    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
-    <!--[if lt IE 9]>
-      <script src="js/html5.js"></script>
-    <![endif]-->
-
-    <!-- Le fav and touch icons - @todo: fill with your icons or remove -->
-    <link rel="shortcut icon" href="img/icons/favicon.png"/>
-    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="img/icons/114x114.png"/>
-    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="img/icons/72x72.png"/>
-    <link rel="apple-touch-icon-precomposed" href="img/icons/default.png"/>
-    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700,300|Rambla|Calligraffitti' rel='stylesheet'
-          type='text/css'/>
-    <script type="text/javascript">
-        $(document).ready(function () {
-            $('.nav-tabs').button();
-
-            $('#type_session').change(function () {
-                if (this.value == 'join') {
-                    $(".btn-group").hide();
-                    $("#username_div").hide();
-                    $("#password_div").hide();
-                } else {
-                    $(".btn-group").show();
+    {% block addtionalHeader %}
+        <title>Login</title>
+        <link rel="stylesheet" href="{{ STATIC_URL }}bootstrap.css">
+        <script src="http://code.jquery.com/jquery-1.8.2.js"></script>
+        <script src="http://code.jquery.com/jquery-migrate-1.1.1.js"></script>
+        <link href="{{ STATIC_URL }}bootstrap-responsive.css" rel="stylesheet">
+        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}style.css"/>
+        <script type="text/javascript">
+            $(document).ready(function () {
+                $("#reg_btn").click(function () {
+                    var e = document.getElementById("type_session");
+                    e.selectedIndex = 0;
+                    $("#create_option").show();
                     $("#username_div").show();
                     $("#password_div").show();
-                }
-            });
+                    $("#view_sessions").show();
+                    $("#btn_input").value = this.value
+                });
 
-            $("#reg_btn").click(function () {
-                var e = document.getElementById("type_session");
-                e.selectedIndex = 0;
-                $("#create_option").show();
-                $("#username_div").show();
-                $("#password_div").show();
-                $("#view_sessions").show();
-                $("#btn_input").value = this.value
-            });
+                $("#anon_btn").click(function () {
+                    var e = document.getElementById("type_session");
+                    e.selectedIndex = 1;
+                    $("#create_option").hide();
+                    $("#username_div").hide();
+                    $("#password_div").hide();
+                    $("#view_sessions").hide();
+                    $("#btn_input").val(this.value)
+                });
 
-            $("#anon_btn").click(function () {
-                var e = document.getElementById("type_session");
-                e.selectedIndex = 1;
-                $("#create_option").hide();
-                $("#username_div").hide();
-                $("#password_div").hide();
-                $("#view_sessions").hide();
-                $("#btn_input").val(this.value)
             });
-
-        });
-    </script>
+        </script>
+    {% endblock %}
 </head>
 <body>
-{% include "template.html" %}
-<div id="content">
-    <div class="container">
-        <div data-role="page">
-            <div id="container">
-                {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
-                <form action="login/" class="form-horizontal" method="post">
-                    {% csrf_token %}
-                    <fieldset>
-                        <div class="control-group" id="username_div">
-                            <label class="control-label" for="username">Username:</label>
+{% block content %}
+    <div data-role="page">
+        {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+        <form action="login/" class="form-horizontal form-login form-wrapper form-medium" method="post">
+            {% csrf_token %}
+            <fieldset>
+                <div class="control-group" id="username_div">
+                    <label class="control-label" for="username">Username:</label>
 
-                            <div class="controls">
-                                <input type="text" name="username" id="username"/>
-                            </div>
-                        </div>
+                    <div class="controls">
+                        <input type="text" name="username" id="username"/>
+                    </div>
+                </div>
 
-                        <div class="control-group" id="password_div">
-                            <label class="control-label" for="password">Password:</label>
+                <div class="control-group" id="password_div">
+                    <label class="control-label" for="password">Password:</label>
 
-                            <div class="controls">
-                                <input type="text" name="password" id="password" value=""/>
-                            </div>
-                        </div>
+                    <div class="controls">
+                        <input type="password" name="password" id="password" value=""/>
+                    </div>
+                </div>
 
-                        <div class="control-group">
-                            <label class="control-label" id="session_id_label" for="session">Create/Join Session
-                                ID:</label>
+                <div class="control-group">
+                    <label class="control-label" id="session_id_label" for="session">Create/Join Session
+                        ID:</label>
 
-                            <div class="controls">
-                                <input type="text" name="session" id="session" value=""/>
-                            </div>
-                        </div>
+                    <div class="controls">
+                        <input type="text" name="session" id="session" value=""/>
+                    </div>
+                </div>
 
-                        <div class="control-group">
-                            <label class="control-label" for="type_session">Create or Join:</label>
+                <div class="control-group">
+                    <label class="control-label" for="type_session">Create or Join:</label>
 
-                            <div class="controls">
-                                <select id="type_session" name="type_session">
-                                    <option id="create_option" value="create">Create Session</option>
-                                    <option id="join_option" value="join">Join Session</option>
-                                    <option id="view_sessions" value="view">View Session Data</option>
-                                </select>
-                            </div>
-                        </div>
+                    <div class="controls">
+                        <select id="type_session" name="type_session">
+                            <option id="create_option" value="create">Create Session</option>
+                            <option id="join_option" value="join">Join Session</option>
+                            <option id="view_sessions" value="view">View Session Data</option>
+                        </select>
+                    </div>
+                </div>
 
-                        <div class="btn-group" data-toggle="buttons-radio">
-                            <button type="button" value="registered" class="btn active" name="type_login" id="reg_btn">
-                                Registered Login
-                            </button>
-                            <button type="button" value="anonymous" class="btn" name="type_login" id="anon_btn">
-                                Anonymous Login
-                            </button>
-                        </div>
-                        <input type="hidden" name="optionLogin" value="registered" id="btn_input"/>
+                <div class="btn-group" data-toggle="buttons-radio">
+                    <button type="button" value="registered" class="btn active" name="type_login" id="reg_btn">
+                        Registered Login
+                    </button>
+                    <button type="button" value="anonymous" class="btn" name="type_login" id="anon_btn">
+                        Anonymous Login
+                    </button>
+                </div>
+                <input type="hidden" name="optionLogin" value="registered" id="btn_input"/>
 
-                        <div class="form-actions">
-                            <button type="submit" class="btn btn-primary" class="btn">Login</button>
-                        </div>
-                </form>
-            </div>
-        </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Login</button>
+                </div>
+            </fieldset>
+        </form>
     </div>
-</div>
+{% endblock %}
 
-<script src="{{ STATIC_URL }}js/bootstrap-transition.js"></script>
-<script src="{{ STATIC_URL }}js/bootstrap-alert.js"></script>
-<script src="{{ STATIC_URL }}js/bootstrap-modal.js"></script>
-<script src="{{ STATIC_URL }}js/bootstrap-dropdown.js"></script>
-<script src="{{ STATIC_URL }}js/bootstrap-scrollspy.js"></script>
-<script src="{{ STATIC_URL }}js/bootstrap-tab.js"></script>
-<script src="{{ STATIC_URL }}js/bootstrap-tooltip.js"></script>
-<script src="{{ STATIC_URL }}js/bootstrap-popover.js"></script>
-<script src="{{ STATIC_URL }}js/bootstrap-button.js"></script>
-<script src="{{ STATIC_URL }}js/bootstrap-collapse.js"></script>
-<script src="{{ STATIC_URL }}js/bootstrap-carousel.js"></script>
-<script src="{{ STATIC_URL }}js/bootstrap-typeahead.js"></script>
+
+{% block endscript %}
+    <script src="{{ STATIC_URL }}js/bootstrap-transition.js"></script>
+    <script src="{{ STATIC_URL }}js/bootstrap-alert.js"></script>
+    <script src="{{ STATIC_URL }}js/bootstrap-modal.js"></script>
+    <script src="{{ STATIC_URL }}js/bootstrap-dropdown.js"></script>
+    <script src="{{ STATIC_URL }}js/bootstrap-scrollspy.js"></script>
+    <script src="{{ STATIC_URL }}js/bootstrap-tab.js"></script>
+    <script src="{{ STATIC_URL }}js/bootstrap-tooltip.js"></script>
+    <script src="{{ STATIC_URL }}js/bootstrap-popover.js"></script>
+    <script src="{{ STATIC_URL }}js/bootstrap-button.js"></script>
+    <script src="{{ STATIC_URL }}js/bootstrap-collapse.js"></script>
+    <script src="{{ STATIC_URL }}js/bootstrap-carousel.js"></script>
+    <script src="{{ STATIC_URL }}js/bootstrap-typeahead.js"></script>
+    <script src="{{ STATIC_URL }}js/bootstrapSwitch.js"></script>
+{% endblock %}
 </body>
 </html>
