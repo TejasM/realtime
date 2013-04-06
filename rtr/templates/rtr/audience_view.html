@@ -96,8 +96,8 @@
                                 "value{{ forloop.counter0 }}": 0,
                             {% endifequal %}
                         {% endfor %}
-                    }).fail(function (jqXHR, textStatus, errorThrown) {
-                                alert("Error" + errorThrown);
+                    }).fail(function(jqXHR, textStatus, errorThrown) {
+                                document.location.href = '/rtr/endsession/';
                             });
                     initValue_{{ label }} = parseInt(this.value);
                 });
@@ -108,10 +108,10 @@
         function postQuestion() {
             var question = $("#myQ");
             $.post('audienceQuestion/', {
-                "question": question.val()
-            }).fail(function (jqXHR, textStatus, errorThrown) {
-                        alert("Error" + errorThrown);
-                    }).always(function () {
+                "question" : question.val()
+            }).fail(function(jqXHR, textStatus, errorThrown) {
+                        document.location.href = '/rtr/endession/';
+                    }).always(function() {
                         question.val('');
                     });
         }

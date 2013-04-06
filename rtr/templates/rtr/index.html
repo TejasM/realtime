@@ -3,7 +3,7 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
-    <link href="{{ STATIC_URL }}css/bootstrap.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="{{ STATIC_URL }}bootstrap.css">
     <script src="http://code.jquery.com/jquery-1.8.2.js"></script>
     <script src="http://code.jquery.com/jquery-migrate-1.1.1.js"></script>
     <link href="{{ STATIC_URL }}bootstrap-responsive.css" rel="stylesheet">
@@ -56,6 +56,8 @@
                 $("#create_option").show();
                 $("#username_div").show();
                 $("#password_div").show();
+                $("#view_sessions").show();
+                $("#btn_input").value = this.value
             });
 
             $("#anon_btn").click(function () {
@@ -65,6 +67,7 @@
                 $("#username_div").hide();
                 $("#password_div").hide();
                 $("#view_sessions").hide();
+                $("#btn_input").val(this.value)
             });
 
         });
