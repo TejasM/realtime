@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.shortcuts import render, redirect
+import sys
 
 
 def index(request):
@@ -65,8 +66,9 @@ def check_input(f):
             messages.error(request, "Username already exists, try another name")
             return redirect(reverse("signup"))
         except User.DoesNotExist:
-            pass
+            return f(request, *args, **kwds)
     return wrapper
+
 
 @check_input
 def signup_post(request):
@@ -75,11 +77,13 @@ def signup_post(request):
     email_address = request.POST['email_address']
     first_name = request.POST['first_name']
     last_name = request.POST['last_name']
-    term = request.POST['term']
+    term = request.POST.get('term', '')
 
-    if term is not "term":
+    if str(term) == '':
+        messages.error(request, "You must accept the terms and agreement")
         return redirect(reverse("signup"))
 
-    User.objects.create(username=username, password=password, email=email_address, first_name=first_name,
-                        last_name=last_name)
+    user = User.objects.create(username=username, email=email_address, first_name=first_name, last_name=last_name)
+    user.set_password(password)
+    user.save()
     return redirect(reverse("rtr:index"))
