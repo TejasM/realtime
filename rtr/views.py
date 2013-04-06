@@ -114,7 +114,7 @@ def prof_display(request):
         for i, stat in enumerate(stats_on):
             labels.append(stat.title())
         context['labels'] = labels
-        return render(request, 'rtr/ProfData.html', context)
+        return render(request, 'rtr/prof_data.html', context)
     else:
         return redirect(request, 'rtr/index.html')
 

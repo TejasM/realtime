@@ -2,18 +2,22 @@ from django.conf.urls import patterns, include, url
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
+from index import views
 
 admin.autodiscover()
 
 urlpatterns = patterns('',
-    # Examples:
-    # url(r'^$', 'mysite.views.home', name='home'),
-    url(r'^rtr/', include('rtr.urls', namespace="rtr")),
-
-    # Uncomment the admin/doc line below to enable admin documentation:
-    # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
-
-    # Uncomment the next line to enable the admin:
-    url(r'^admin/', include(admin.site.urls)),
-
+                       # Examples:
+                       url(r'^rtr/', include('rtr.urls', namespace="rtr")),
+                       url(r'^$', views.index, name='index'),
+                       url(r'^about/', views.about, name='about'),
+                       url(r'^blog-post/', views.blog_post, name='blog-post'),
+                       url(r'^contact/', views.contact, name='contact'),
+                       url(r'^customers/', views.customers, name='customers'),
+                       url(r'^features/', views.features, name='features'),
+                       url(r'^pricing/', views.pricing, name='pricing'),
+                       url(r'^signup/', views.signup, name='signup'),
+                       url(r'^signup/signup/', views.signup_post, name='signup_post'),
+                       url(r'^team/', views.team, name='team'),
+                       url(r'^admin/', include(admin.site.urls)),
 )

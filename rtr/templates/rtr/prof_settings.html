@@ -1,76 +1,114 @@
-<!DOCTYPE html> 
-<html> 
-	<head>
-		<meta name="viewport" content="width=device-width, initial-scale=1.0"> 	
-		<title>Professor Settings</title>
-		<link rel="stylesheet" href="{{ STATIC_URL }}bootstrapSwitch.css">
-        <link rel="stylesheet" href="{{ STATIC_URL }}bootstrap.css">
-        <script src="http://code.jquery.com/jquery-1.8.2.js"></script>
-        <script src="http://code.jquery.com/jquery-migrate-1.1.1.js"></script>
-        <link href="{{ STATIC_URL }}bootstrap-responsive.css" rel="stylesheet">
-        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}style.css" />
-		<script type="text/javascript">
-		</script>
-	</head> 
-	<body>
-		<div data-role="page">
-			<div id="container">
-				<div data-role="header" class="center">
-					<h1>{{ request.session.session_name }}</h1>
-				</div><!-- /header -->
-				<form class="form-horizontal" action="start/" method="post">
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professor Settings</title>
+    <link rel="stylesheet" href="{{ STATIC_URL }}bootstrapSwitch.css">
+    <link rel="stylesheet" href="{{ STATIC_URL }}css/bootstrap.css">
+    <script src="http://code.jquery.com/jquery-1.8.2.js"></script>
+    <script src="http://code.jquery.com/jquery-migrate-1.1.1.js"></script>
+    <link href="{{ STATIC_URL }}bootstrap-responsive.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}style.css"/>
+    <link href="{{ STATIC_URL }}css/responsive.css" rel="stylesheet"/>
+
+    <!-- Flexslider -->
+    <link href="{{ STATIC_URL }}css/flexslider.css" rel="stylesheet"/>
+
+    <!-- Theme style -->
+    <link href="{{ STATIC_URL }}css/theme-style.css" rel="stylesheet"/>
+
+    <!--Your custom colour override-->
+    <link href="#" id="colour-scheme" rel="stylesheet"/>
+
+    <!-- Your custom override -->
+    <link href="{{ STATIC_URL }}css/custom-style.css" rel="stylesheet"/>
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="js/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le fav and touch icons - @todo: fill with your icons or remove -->
+    <link rel="shortcut icon" href="img/icons/favicon.png"/>
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="img/icons/114x114.png"/>
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="img/icons/72x72.png"/>
+    <link rel="apple-touch-icon-precomposed" href="img/icons/default.png"/>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700,300|Rambla|Calligraffitti' rel='stylesheet'
+          type='text/css'/>
+    <script type="text/javascript">
+    </script>
+</head>
+<body>
+{% include "template.html" %}
+<div id="content">
+    <div class="container">
+        <div data-role="page">
+            <div id="container">
+                <div data-role="header" class="center">
+                    <h1>{{ request.session.session_name }}</h1>
+                </div>
+                <!-- /header -->
+                <form class="form-horizontal" action="start/" method="post">
                     {% csrf_token %}
-					<fieldset>
-						<h3>Types of Statistics</h3>
-						<div class="control-group" id="uderstanding_div">
-							<label class="control-label" for="understanding_toggle_button">Understanding:</label>
-							<div class="controls">
-								<div id="understanding_toggle_button" class="switch">
-									<input type="checkbox" checked="checked" name="understanding_toggle">
-								</div>
-							</div>
-						</div>
-						
-						<div class="control-group" id="interest_div">
-							<label class="control-label" for="interest">Interest:</label>
-							<div class="controls">
-								<div id="interest_toggle_button" class="switch">
-									<input type="checkbox" checked="checked" name="interest_toggle">
-								</div>
-							</div>
-						</div>
-						
-						<h3>General Settings</h3>
-						<div class="control-group" id="sound_div">
-							<label class="control-label" for="sound">Sound Switch:</label>
-							<div class="controls">
-								<div id="sound_toggle_button" class="switch">
-									<input type="checkbox" checked="checked" name="sound_toggle">
-								</div>
-							</div>
-						</div>
+                    <fieldset>
+                        <h3>Types of Statistics</h3>
 
-						<!--start session -->
-						<div class="form-actions">
-							<button type="submit" class="btn btn-primary" class="btn">Start Session</button>
-						</div>
-					</fieldset>
-				</form>				
-			</div>
-		</div>
+                        <div class="control-group" id="uderstanding_div">
+                            <label class="control-label" for="understanding_toggle_button">Understanding:</label>
 
-        <script src="{{ STATIC_URL }}js/bootstrap-transition.js"></script>
-        <script src="{{ STATIC_URL }}js/bootstrap-alert.js"></script>
-        <script src="{{ STATIC_URL }}js/bootstrap-modal.js"></script>
-        <script src="{{ STATIC_URL }}js/bootstrap-dropdown.js"></script>
-        <script src="{{ STATIC_URL }}js/bootstrap-scrollspy.js"></script>
-        <script src="{{ STATIC_URL }}js/bootstrap-tab.js"></script>
-        <script src="{{ STATIC_URL }}js/bootstrap-tooltip.js"></script>
-        <script src="{{ STATIC_URL }}js/bootstrap-popover.js"></script>
-        <script src="{{ STATIC_URL }}js/bootstrap-button.js"></script>
-        <script src="{{ STATIC_URL }}js/bootstrap-collapse.js"></script>
-        <script src="{{ STATIC_URL }}js/bootstrap-carousel.js"></script>
-        <script src="{{ STATIC_URL }}js/bootstrap-typeahead.js"></script>
-        <script src="{{ STATIC_URL }}js/bootstrapSwitch.js"></script>
-	</body>
+                            <div class="controls">
+                                <div id="understanding_toggle_button" class="switch">
+                                    <input type="checkbox" checked="checked" name="understanding_toggle">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="control-group" id="interest_div">
+                            <label class="control-label" for="interest">Interest:</label>
+
+                            <div class="controls">
+                                <div id="interest_toggle_button" class="switch">
+                                    <input type="checkbox" checked="checked" name="interest_toggle">
+                                </div>
+                            </div>
+                        </div>
+
+                        <h3>General Settings</h3>
+
+                        <div class="control-group" id="sound_div">
+                            <label class="control-label" for="sound">Sound Switch:</label>
+
+                            <div class="controls">
+                                <div id="sound_toggle_button" class="switch">
+                                    <input type="checkbox" checked="checked" name="sound_toggle">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--start session -->
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary" class="btn">Start Session</button>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="{{ STATIC_URL }}js/bootstrap-transition.js"></script>
+<script src="{{ STATIC_URL }}js/bootstrap-alert.js"></script>
+<script src="{{ STATIC_URL }}js/bootstrap-modal.js"></script>
+<script src="{{ STATIC_URL }}js/bootstrap-dropdown.js"></script>
+<script src="{{ STATIC_URL }}js/bootstrap-scrollspy.js"></script>
+<script src="{{ STATIC_URL }}js/bootstrap-tab.js"></script>
+<script src="{{ STATIC_URL }}js/bootstrap-tooltip.js"></script>
+<script src="{{ STATIC_URL }}js/bootstrap-popover.js"></script>
+<script src="{{ STATIC_URL }}js/bootstrap-button.js"></script>
+<script src="{{ STATIC_URL }}js/bootstrap-collapse.js"></script>
+<script src="{{ STATIC_URL }}js/bootstrap-carousel.js"></script>
+<script src="{{ STATIC_URL }}js/bootstrap-typeahead.js"></script>
+<script src="{{ STATIC_URL }}js/bootstrapSwitch.js"></script>
+</body>
 </html>
