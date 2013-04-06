@@ -87,7 +87,7 @@
     </div>
 </div>
 {% endblock %}
-<!--Scripts -->
+{% block endscript %}<!--Scripts -->
 <script src="{{ STATIC_URL }}js/jquery.js"></script>
 
 <!-- @todo: remove unused Javascript for better performance -->
@@ -116,6 +116,6 @@
     $(document).ready(function () {
         $('#portfolio-categories').scrollspy();
     });
-</script>
+</script>{% endblock %}
 </body>
 </html>

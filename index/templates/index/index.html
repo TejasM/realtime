@@ -181,7 +181,7 @@
 </div>
 {% endblock %}
 
-
+{% block endscript %}
 <!--Scripts -->
 <script src="{{ STATIC_URL }}js/jquery.js"></script>
 
@@ -206,5 +206,6 @@
 
 <!--Custom scripts mainly used to trigger libraries -->
 <script src="{{ STATIC_URL }}js/script.js"></script>
+{% endblock %}
 </body>
 </html>
