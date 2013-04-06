@@ -3,6 +3,7 @@
 <head>
     {% block addtionalHeader %}
     {% endblock %}
+    {%  block mainHeaders %}
     <meta charset="utf-8"/>
     <title>AppStrap Bootstrap Theme by Themelize.me</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -46,7 +47,7 @@
 
 
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-
+    {% endblock %}
     {% block endHeader %}
     {% endblock %}
 </head>
@@ -110,7 +111,7 @@
                         <li class="home-link"><a href="/"><i class="icon-home hidden-phone"></i><span
                                 class="visible-phone">Home</span></a></li>
                         <li>
-                            <a href="/features" {% comment %}class="dropdown-toggle menu-item" id="features-drop" data-toggle="dropdown"{% endcomment %}>Features</a>
+                            <a href="/features" data-role="none" {% comment %}class="dropdown-toggle menu-item" id="features-drop" data-toggle="dropdown"{% endcomment %}>Features</a>
                             <!-- Dropdown Menu -->
                             {% comment %}<ul class="dropdown-menu mega-menu" role="menu" aria-labelledby="features-drop">
                 <li class="mega-menu-wrapper" role="menuitem"> <span class="menu-title">Mega Menu with links & text items</span>
@@ -122,9 +123,9 @@
                 </li>
               </ul>{% endcomment %}
                         </li>
-                        <li><a href="/pricing" class="menu-item">Pricing</a></li>
-                        <li><a href="/customers" class="menu-item">Customers</a></li>
-                        <li class="dropdown"><a href="/about" class="dropdown-toggle" id="about-drop"
+                        <li><a href="/pricing" data-role="none" class="menu-item">Pricing</a></li>
+                        <li><a href="/customers" data-role="none" class="menu-item">Customers</a></li>
+                        <li class="dropdown"><a href="/about" data-role="none" class="dropdown-toggle" id="about-drop"
                                                 data-toggle="dropdown">About</a>
                             <!-- Dropdown Menu -->
                             <ul class="dropdown-menu" role="menu" aria-labelledby="about-drop">
@@ -133,7 +134,7 @@
                                 <li role="menuitem"><a href="/contact" tabindex="-1" class="menu-item">Contact</a></li>
                             </ul>
                         </li>
-                        <li><a href="/blog-post">Blog</a></li>
+                        <li><a href="/blog-post" data-role="none">Blog</a></li>
                     </ul>
                 </div>
                 <!--/.nav-collapse -->

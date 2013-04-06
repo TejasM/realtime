@@ -18,7 +18,7 @@ def index(request):
     if request.session.get('type') is not None:
         if request.session.get('type') == 'creater':
             return HttpResponseRedirect('profDisplay')
-        elif request.session.get('type') == 'join':
+        elif request.session.get('type') == 'joiner':
             return HttpResponseRedirect('audience_view')
     return render(request, 'rtr/index.html')
 
@@ -33,7 +33,7 @@ def end_session(request):
         series = Session.objects.get(pk=int(request.session['session'])).series
         series.live = False
         series.save()
-    elif request.session.get('type') == 'join':
+    elif request.session.get('type') == 'joiner':
         session = Session.objects.get(pk=int(request.session['session']))
         session.cur_num -= 1
         session.save()
@@ -127,8 +127,7 @@ def get_all(request):
         for stat_on in stats:
             stats_per_user = Stats.objects.filter(session=request.session.get('session'), name=stat_on)
             percentages.append(str(calculate_stats(stats_per_user)))
-        questions = Question.objects.filter(session=request.session.get('session'))
-        data = [{'percentages': percentages, 'questions': list(questions), 'count': session.cur_num}]
+        data = [{'percentages': percentages, 'count': session.cur_num}]
         return HttpResponse(simplejson.dumps(data), content_type='application/json')
     else:
         return redirect(request, 'rtr/index.html')
@@ -261,6 +260,9 @@ def loginUser(request):
             request.session['session'] = str(session.id)
             request.session['type'] = 'joiner'
             request.session['statids'] = stat_ids
+            user = authenticate(username="tejas", password="tejas")
+            if user is not None:
+                login(request, user)
             return redirect(reverse('rtr:audience_display'))
         except Series.DoesNotExist:
             messages.error(request, "Incorrect session, not currently running")
