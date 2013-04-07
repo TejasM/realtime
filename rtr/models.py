@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.utils import timezone
 
 
 class Series(models.Model):
@@ -22,11 +23,13 @@ class Session(models.Model):
 class Stats(models.Model):
     session = models.ForeignKey(Session)
     name = models.CharField(max_length=200)
+    live = models.BooleanField(default=True)
 
 
 class Stat(models.Model):
     change = models.IntegerField()
-    timestamp = models.DateTimeField()
+    old_value = models.IntegerField()
+    timestamp = models.DateTimeField(default=timezone.now)
     stats = models.ForeignKey(Stats)
 
 

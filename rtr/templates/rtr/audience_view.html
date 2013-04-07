@@ -109,6 +109,12 @@
                                 {% else %}
                                     "value{{ forloop.counter0 }}": 0,
                                 {% endifequal %}
+
+                                {% ifequal index forloop.parentloop.counter0 %}
+                                    "oldvalue{{ forloop.counter0 }}": initValue_{{ label }},
+                                {% else %}
+                                    "oldvalue{{ forloop.counter0 }}": 0,
+                                {% endifequal %}
                             {% endfor %}
                         }).fail(function (jqXHR, textStatus, errorThrown) {
                                     document.location.href = '/rtr/endsession/';

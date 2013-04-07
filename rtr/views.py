@@ -1,5 +1,6 @@
+from __future__ import division
 from collections import defaultdict
-from datetime import timedelta
+from datetime import timedelta, datetime
 from functools import wraps
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -11,6 +12,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.utils import timezone, simplejson
 from django.utils.safestring import mark_safe
 
+import pytz
+
 from rtr.models import Session, Series, Stats, Question, Stat
 
 
@@ -19,7 +22,7 @@ def index(request):
         if request.session.get('type') == 'creater':
             return HttpResponseRedirect('profDisplay')
         elif request.session.get('type') == 'joiner':
-            return HttpResponseRedirect('audience_view')
+            return redirect(reverse('rtr:audience_display'))
     return render(request, 'rtr/index.html')
 
 
@@ -37,7 +40,17 @@ def end_session(request):
         session = Session.objects.get(pk=int(request.session['session']))
         session.cur_num -= 1
         session.save()
+        statids = request.session.get('statids')
+        if statids[-1] == ',':
+            statids = statids[:len(statids) - 1]
+        statids = statids.split(',')
+        for stat_key in statids:
+            stats = Stats.objects.get(pk=stat_key)
+            stats.live = False
+            stats.save()
+
     logout(request)
+    request.session.clear()
     return redirect(reverse('rtr:index'))
 
 
@@ -83,28 +96,29 @@ def updateStats(request):
         statids = statids[:len(statids) - 1]
     statids = statids.split(',')
     for i, stats in enumerate(statids):
-        Stat.objects.create(change=int(request.POST['value' + str(i)]), timestamp=timezone.now(),
-                            stats=Stats.objects.get(pk=stats))
+        Stat.objects.create(change=int(request.POST['value' + str(i)]),
+                            old_value=int(request.POST['oldvalue' + str(i)]), stats=Stats.objects.get(pk=stats))
     return redirect(reverse('rtr:audience_display'))
 
 
-def calculate_stats(stats_per_user):
+def calculate_stats(stats_per_user, num_of_users):
     result = 0
     if stats_per_user:
         for user_stat in stats_per_user:
-            changes_by_user = Stat.objects.filter(stats=user_stat)
-            total_user_change = 0
-            for single_stat in changes_by_user:
-                total_user_change += single_stat.change
-            result += total_user_change
-        result /= len(stats_per_user)
+            if user_stat.live:
+                changes_by_user = Stat.objects.filter(stats=user_stat).order_by("timestamp").reverse()
+                total_user_change = 0
+                alpha = 2 / (len(changes_by_user) + 1)
+                for i, single_stat in enumerate(changes_by_user):
+                    if single_stat.old_value != 0 and single_stat.change != 0:
+                        total_user_change += pow((1 - alpha), i) * single_stat.change
+                result += (1 / num_of_users) * total_user_change * 25
     return result
 
 
 @login_required()
 def get_stats(request):
     if request.session.get('type') == 'creater':
-        #Why are we getting stat object
         session = Session.objects.get(pk=request.session.get('session'))
         stats = session.stats_on.split(",")
         percentages = []
@@ -126,7 +140,7 @@ def get_all(request):
         percentages = []
         for stat_on in stats:
             stats_per_user = Stats.objects.filter(session=request.session.get('session'), name=stat_on)
-            percentages.append(str(calculate_stats(stats_per_user)))
+            percentages.append(str(max(0, min(round(50 + calculate_stats(stats_per_user, session.cur_num), 1), 100))))
         data = [{'percentages': percentages, 'count': session.cur_num}]
         return HttpResponse(simplejson.dumps(data), content_type='application/json')
     else:
@@ -226,7 +240,7 @@ def loginUser(request):
             series = Series.objects.get(series_id=session, live=False)
             series.live = True
             series.save()
-            newSession = Session.objects.create(series=series, create_time=timezone.now(), stats_on="")
+            newSession = Session.objects.create(series=series, create_time=timezone.now(), stats_on="", user=user)
         except Series.DoesNotExist:
             try:
                 Series.objects.get(series_id=session)
@@ -300,7 +314,7 @@ def view_series(request, series_id):
 
 
 @login_required()
-def view_session(request, session_id):
+def view_session(request, session_id, location):
     try:
         session = Session.objects.get(pk=session_id)
         if not session.user == request.user:
@@ -315,9 +329,10 @@ def view_session(request, session_id):
 
         for key, value in groups_of_stats.iteritems():
             groups_of_stats[key] = group_stats(value)
-
+        location = location.replace("1", "/")
+        zone = pytz.timezone(str(location))
         for label, stat in groups_of_stats.iteritems():
-            total_change = all_changes(stat, label)
+            total_change = all_changes(stat, label, zone)
             if total_change:
                 changes.append(total_change)
         context['changes'] = changes
@@ -340,7 +355,7 @@ def group_stats(stats):
     return sorted(individual_changes, key=lambda x: x.timestamp)
 
 
-def all_changes(individual_changes, label):
+def all_changes(individual_changes, label, zone):
     if individual_changes:
         end_time = (individual_changes[::-1])[0].timestamp
         init_time = individual_changes[0].timestamp
@@ -353,7 +368,9 @@ def all_changes(individual_changes, label):
             if change.timestamp - init_time - (index * timedelta(minutes=delta)) < timedelta(minutes=0):
                 net_change_over_interval += change.change
             else:
-                x.append(str((init_time + (index * timedelta(minutes=delta))).strftime("%I:%M %p")))
+                time = (init_time + (index * timedelta(minutes=delta)))
+                time = time.astimezone(zone)
+                x.append(str(time.strftime("%I:%M %p")))
                 y.append(net_change_over_interval)
                 net_change_over_interval = change.change
                 index += 1

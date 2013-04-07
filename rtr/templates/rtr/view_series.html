@@ -8,6 +8,7 @@
         <link rel="stylesheet" href="{{ STATIC_URL }}css/bootstrap.css">
         <script src="http://code.jquery.com/jquery-1.8.2.js"></script>
         <script src="http://code.jquery.com/jquery-migrate-1.1.1.js"></script>
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/jstimezonedetect/1.0.4/jstz.min.js"></script>
         <link href="{{ STATIC_URL }}bootstrap-responsive.css" rel="stylesheet">
         <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}style.css"/>
         <link href="{{ STATIC_URL }}css/responsive.css" rel="stylesheet"/>
@@ -37,6 +38,9 @@
         <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700,300|Rambla|Calligraffitti' rel='stylesheet'
               type='text/css'/>
         <script type="text/javascript">
+            var tz = jstz.determine(); // Determines the time zone of the browser client
+            var loc=tz.name();
+            loc = loc.replace("/", "1")
         </script>
     {% endblock %}
 </head>
@@ -49,7 +53,7 @@
         <!-- /header -->
         <ul>
             {% for session in Sessions %}
-                <li><a href="/rtr/viewSession/{{ session.id }}">Session{{ forloop.counter }}</a>: Created
+                <li><a href="/rtr/viewSession/{{ session.id }}" onclick="location.href=this.href+'/'+loc;return false;">Session{{ forloop.counter }}</a>: Created
                     - {{ session.create_time }}</li>
             {% endfor %}
         </ul>

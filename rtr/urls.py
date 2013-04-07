@@ -21,6 +21,6 @@ urlpatterns = patterns('',
                        url(r'endsession/$', views.end_session, name='end_session'),
                        url(r'audience_view/leavesession/$', views.end_session, name='leave_session'),
                        url(r'viewSeries/(?P<series_id>\d+)/$', views.view_series, name='view_series'),
-                       url(r'viewSession/(?P<session_id>\d+)/$', views.view_session, name='view_session'),
+                       url(r'viewSession/(?P<session_id>\d+)/(?P<location>\w+)$', views.view_session, name='view_session'),
 )
 
