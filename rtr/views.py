@@ -108,6 +108,7 @@ def calculate_stats(stats_per_user, num_of_users):
             if user_stat.live:
                 changes_by_user = Stat.objects.filter(stats=user_stat).order_by("timestamp").reverse()
                 total_user_change = 0
+                changes_by_user = [change for change in changes_by_user if change.change != 0]
                 alpha = 2 / (len(changes_by_user) + 1)
                 for i, single_stat in enumerate(changes_by_user):
                     if single_stat.old_value != 0 and single_stat.change != 0:
