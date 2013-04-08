@@ -2,6 +2,7 @@ from __future__ import division
 from collections import defaultdict
 from datetime import timedelta, datetime
 from functools import wraps
+import json
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core import serializers
@@ -9,7 +10,7 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
-from django.utils import timezone, simplejson
+from django.utils import timezone
 from django.utils.safestring import mark_safe
 
 import pytz
@@ -96,8 +97,9 @@ def updateStats(request):
         statids = statids[:len(statids) - 1]
     statids = statids.split(',')
     for i, stats in enumerate(statids):
-        Stat.objects.create(change=int(request.POST['value' + str(i)]),
-                            old_value=int(request.POST['oldvalue' + str(i)]), stats=Stats.objects.get(pk=stats))
+        if int(request.POST['value' + str(i)]) != 0:
+            Stat.objects.create(change=int(request.POST['value' + str(i)]),
+                                old_value=int(request.POST['oldvalue' + str(i)]), stats=Stats.objects.get(pk=stats))
     return redirect(reverse('rtr:audience_display'))
 
 
@@ -109,9 +111,10 @@ def calculate_stats(stats_per_user, num_of_users):
                 changes_by_user = Stat.objects.filter(stats=user_stat).order_by("timestamp").reverse()
                 total_user_change = 0
                 changes_by_user = [change for change in changes_by_user if change.change != 0]
+                changes_by_user = changes_by_user[:2]
                 alpha = 2 / (len(changes_by_user) + 1)
                 for i, single_stat in enumerate(changes_by_user):
-                    if single_stat.old_value != 0 and single_stat.change != 0:
+                    if single_stat.change != 0:
                         total_user_change += pow((1 - alpha), i) * single_stat.change
                 result += (1 / num_of_users) * total_user_change * 25
     return result
@@ -127,7 +130,7 @@ def get_stats(request):
             stats_per_user = Stats.objects.filter(session=request.session.get('session'), name=stat_on)
             percentages.append(str(calculate_stats(stats_per_user)))
         data = [{'percentages': percentages}]
-        return HttpResponse(simplejson.dumps(data), content_type='application/json')
+        return HttpResponse(json.dumps(data), content_type='application/json')
     else:
         return redirect(request, 'rtr/index.html')
 
@@ -143,7 +146,7 @@ def get_all(request):
             stats_per_user = Stats.objects.filter(session=request.session.get('session'), name=stat_on)
             percentages.append(str(max(0, min(round(50 + calculate_stats(stats_per_user, session.cur_num), 1), 100))))
         data = [{'percentages': percentages, 'count': session.cur_num}]
-        return HttpResponse(simplejson.dumps(data), content_type='application/json')
+        return HttpResponse(json.dumps(data), content_type='application/json')
     else:
         return redirect(request, 'rtr/index.html')
 

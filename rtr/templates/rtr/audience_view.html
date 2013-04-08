@@ -93,7 +93,7 @@
                 });
             });
 
-            $(document).ready(function () {
+            {% comment %}$(document).ready(function () {
 
                 {%  for label in labels %}
                     var initValue_{{ label }} = 3;
@@ -122,8 +122,36 @@
                         initValue_{{ label }} = parseInt(this.value);
                     });
                 {% endfor %}
-            });
+            });{% endcomment %}
+            {%  for label in labels %}
+                initValue_{{ label }} = 0
+            {% endfor %}
+            function getSliderData() {
+                {%  for label in labels %}
+                    var string = "#slider-{{ label }}";
+                    var slider_{{ label }} = $(string);
 
+
+                    $.post('audienceResponse/', {
+                        {% for index in size %}
+                            {% ifequal index forloop.parentloop.counter0 %}
+                                "value{{ forloop.counter0 }}": slider_{{ label }}.val(),
+                            {% else %}
+                                "value{{ forloop.counter0 }}": 0,
+                            {% endifequal %}
+
+                            {% ifequal index forloop.parentloop.counter0 %}
+                                "oldvalue{{ forloop.counter0 }}": initValue_{{ label }},
+                            {% else %}
+                                "oldvalue{{ forloop.counter0 }}": 0,
+                            {% endifequal %}
+                        {% endfor %}
+                    }).fail(function (jqXHR, textStatus, errorThrown) {
+                                document.location.href = '/rtr/endsession/';
+                            });
+                {% endfor %}
+            }
+            setInterval(getSliderData, 4000);
 
             function postQuestion() {
                 var question = $("#myQ");
@@ -152,9 +180,9 @@
                     <label for="slider-{{ label }}">{{ label }}</label>
                     <input data-theme="a" data-track-theme="b"
                            type="range" name="slider-{{ label }}" id="slider-{{ label }}"
-                           value="3"
-                           min="1"
-                           max="5"
+                           value="0"
+                           min="-2"
+                           max="2"
                            step="1"/>
                 </div>
             </div>
