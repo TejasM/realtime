@@ -7,7 +7,7 @@ import django
 DJANGO_ROOT = os.path.dirname(os.path.realpath(django.__file__))
 SITE_ROOT = os.path.dirname(os.path.realpath(__file__))
 
-ASYNC_BACKEND_URL = 'http://localhost:8001'
+ASYNC_BACKEND_URL = 'http://frozen-beyond-1491.herokuapp.com'
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
