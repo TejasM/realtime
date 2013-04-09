@@ -41,3 +41,5 @@ nosetests.xml
 .idea/
 database
 
+node_modules
+
