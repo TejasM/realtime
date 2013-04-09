@@ -47,9 +47,13 @@
         <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700,300|Rambla|Calligraffitti' rel='stylesheet'
               type='text/css'/>
 
+        <script src="{{ async_url }}/socket.io/socket.io.js"></script>
+
+
 
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     {% endblock %}
+
     {% block endHeader %}
         <script type="text/javascript">
             $(function () {
@@ -124,7 +128,7 @@
                 {% endfor %}
             });{% endcomment %}
             {%  for label in labels %}
-                initValue_{{ label }} = 0
+                var initValue_{{ label }} = 0
             {% endfor %}
             function getSliderData() {
                 {%  for label in labels %}
@@ -155,13 +159,15 @@
 
             function postQuestion() {
                 var question = $("#myQ");
-                $.post('audienceQuestion/', {
-                    "question": question.val()
-                }).fail(function (jqXHR, textStatus, errorThrown) {
-                            document.location.href = '/rtr/endession/';
-                        }).always(function () {
-                            question.val('');
-                        });
+                if (question.val() != '') {
+                    $.post('audienceQuestion/', {
+                        "question": question.val()
+                    }).fail(function (jqXHR, textStatus, errorThrown) {
+                                document.location.href = '/rtr/endession/';
+                            }).always(function () {
+                                question.val('');
+                            });
+                }
             }
         </script>
     {% endblock %}
@@ -191,7 +197,8 @@
         <div data-role="content" id="QuestionContainer" data-role="fieldcontain">
             <div class="control-group" id="question_div">
                 <label for="myQ">Ask a Question:</label>
-                <input type="text" name="Questions" id="myQ" value=""/>
+                <input type="text" name="Questions" id="myQ" value=""
+                       onkeyup="if (event.keyCode == 13) {postQuestion()}"/>
             </div>
         </div>
 

@@ -1,0 +1,10 @@
+{
+    "name": "rtr-realtime",
+    "version": "0.0.1",
+    "description": "Server on Socket.IO",
+    "author": "Tejas Mehta<tejasmehta0@gmail.com>",
+    "dependencies": {
+        "socket.io": ">= 0.9.13"
+    },
+    "engine": "node >= 0.6.15"
+}

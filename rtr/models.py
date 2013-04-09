@@ -1,7 +1,18 @@
+import json
+import urllib
+import urllib2
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
+from mysite import settings
 
+
+def send_event(event_type, event_data):
+    to_send = {
+        'event': event_type,
+        'data': event_data
+    }
+    urllib2.urlopen(settings.ASYNC_BACKEND_URL, urllib.urlencode(to_send))
 
 class Series(models.Model):
     live = models.BooleanField(default=False)
@@ -37,3 +48,17 @@ class Question(models.Model):
     session = models.ForeignKey(Session)
     question = models.CharField(max_length=500)
     time_asked = models.DateTimeField()
+
+    def __unicode__(self):
+        return self.question
+
+    def as_dict(self):
+        data = {
+            'id': self.pk,
+            'question': self.question,
+        }
+        return json.dumps(data)
+
+    def save(self, *args, **kwargs):
+        super(Question, self).save(*args, **kwargs)
+        send_event('message-create', self.as_dict())

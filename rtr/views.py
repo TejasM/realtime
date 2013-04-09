@@ -14,6 +14,7 @@ from django.utils import timezone
 from django.utils.safestring import mark_safe
 
 import pytz
+from mysite import settings
 
 from rtr.models import Session, Series, Stats, Question, Stat
 
@@ -64,7 +65,8 @@ def audience_display(request):
         labels = []
         for ids in statids:
             labels.append((str(Stats.objects.get(pk=int(ids)).name)))
-        return render(request, 'rtr/audience_view.html', {'labels': labels, 'size': range(len(labels))})
+        return render(request, 'rtr/audience_view.html',
+                      dict(labels=labels, size=range(len(labels)), async_url=settings.ASYNC_BACKEND_URL))
     else:
         return redirect(request, 'rtr/index.html')
 
@@ -79,6 +81,7 @@ def check_session(f):
             messages.error(request, "Session has now ended")
             request.session.clear()
             raise Exception("Session has ended")
+
     return wrapper
 
 
@@ -97,9 +100,8 @@ def updateStats(request):
         statids = statids[:len(statids) - 1]
     statids = statids.split(',')
     for i, stats in enumerate(statids):
-        if int(request.POST['value' + str(i)]) != 0:
-            Stat.objects.create(change=int(request.POST['value' + str(i)]),
-                                old_value=int(request.POST['oldvalue' + str(i)]), stats=Stats.objects.get(pk=stats))
+        Stat.objects.create(change=int(request.POST['value' + str(i)]),
+                            old_value=int(request.POST['oldvalue' + str(i)]), stats=Stats.objects.get(pk=stats))
     return redirect(reverse('rtr:audience_display'))
 
 
@@ -110,8 +112,8 @@ def calculate_stats(stats_per_user, num_of_users):
             if user_stat.live:
                 changes_by_user = Stat.objects.filter(stats=user_stat).order_by("timestamp").reverse()
                 total_user_change = 0
-                changes_by_user = [change for change in changes_by_user if change.change != 0]
-                changes_by_user = changes_by_user[:2]
+                changes_by_user = [change for change in changes_by_user]
+                changes_by_user = changes_by_user[:3]
                 alpha = 2 / (len(changes_by_user) + 1)
                 for i, single_stat in enumerate(changes_by_user):
                     if single_stat.change != 0:
@@ -176,6 +178,7 @@ def prof_display(request):
         for i, stat in enumerate(stats_on):
             labels.append(stat.title())
         context['labels'] = labels
+        context['async_url'] = settings.ASYNC_BACKEND_URL
         return render(request, 'rtr/prof_data.html', context)
     else:
         return redirect(request, 'rtr/index.html')

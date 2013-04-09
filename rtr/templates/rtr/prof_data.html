@@ -1,95 +1,6 @@
 <!DOCTYPE html>
 {% extends "template.html" %}
 <html>
-<head>
-    {% block addtionalHeader %}
-        <title>Professor Data</title>
-        <link rel="stylesheet" href="{{ STATIC_URL }}bootstrapSwitch.css">
-        <link rel="stylesheet" href="{{ STATIC_URL }}css/bootstrap.css">
-        <script src="http://code.jquery.com/jquery-1.8.2.js"></script>
-        <script src="http://code.jquery.com/jquery-migrate-1.1.1.js"></script>
-        <link href="{{ STATIC_URL }}bootstrap-responsive.css" rel="stylesheet">
-        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}style.css"/>
-        <link href="{{ STATIC_URL }}css/responsive.css" rel="stylesheet"/>
-
-        <!-- Flexslider -->
-        <link href="{{ STATIC_URL }}css/flexslider.css" rel="stylesheet"/>
-
-        <!-- Theme style -->
-        <link href="{{ STATIC_URL }}css/theme-style.css" rel="stylesheet"/>
-
-        <!--Your custom colour override-->
-        <link href="#" id="colour-scheme" rel="stylesheet"/>
-
-        <!-- Your custom override -->
-        <link href="{{ STATIC_URL }}css/custom-style.css" rel="stylesheet"/>
-
-        <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
-        <!--[if lt IE 9]>
-      <script src="js/html5.js"></script>
-    <![endif]-->
-
-        <!-- Le fav and touch icons - @todo: fill with your icons or remove -->
-        <link rel="shortcut icon" href="img/icons/favicon.png"/>
-        <link rel="apple-touch-icon-precomposed" sizes="114x114" href="img/icons/114x114.png"/>
-        <link rel="apple-touch-icon-precomposed" sizes="72x72" href="img/icons/72x72.png"/>
-        <link rel="apple-touch-icon-precomposed" href="img/icons/default.png"/>
-        <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700,300|Rambla|Calligraffitti' rel='stylesheet'
-              type='text/css'/>
-        <script type="text/javascript">
-            $(function () {
-                $("#question_input").change(function () {
-                    $("#question_list").toggle();
-                });
-
-                function colorFromValue(value) {
-                    var color;
-                    if (value > 100) {
-                        color = "#009933";
-                    } else if (value > 75) {
-                        color = "#33CC33";
-                    } else if (value < 50) {
-                        color = "#FF0000";
-                    } else if (value < 25) {
-                        color = "#FF3300";
-                    } else {
-                        color = "#FFFFFF";
-                    }
-                    return color;
-                };
-
-                setInterval(updatePercentage, 2000);
-
-                function updatePercentage() {
-
-                    $.get('all',function (data) {
-                        var percentages = data[0]['percentages'];
-                        var count = data[0]['count'];
-                        for (var i = 0; i < percentages.length; i++) {
-                            var percentage = $('#Percent' + i.toString())
-                            percentage.html(percentages[i] + " %").css('background-color',
-                                    colorFromValue(percentages[i]));
-                        }
-
-                        $("#count").html(count)
-                    }).fail(function (jqXHR, textStatus, errorThrown) {
-                                alert("Error" + errorThrown);
-                            });
-
-                    $.get('questions').done(function (questions) {
-                        $("#List").empty();
-                        $.each(questions, function (index, question) {
-                            $("#List").append("<li>" + question.fields['question'] + "</li>");
-                        });
-                    }).fail(function (jqXHR, textStatus, errorThrown) {
-                                alert("Error" + errorThrown);
-                            });
-                };
-
-            });
-        </script>
-    {% endblock %}
-</head>
 <body>
 {% block content %}
     <div class="row">
@@ -153,6 +64,77 @@
 {% endblock %}
 
 {% block endscript %}
+    <script src="{{ async_url }}/socket.io/socket.io.js"></script>
+
+    <script type="text/javascript">
+
+        $(function () {
+            $("#question_input").change(function () {
+                $("#question_list").toggle();
+            });
+
+            $.get('questions').done(function (questions) {
+                $("#List").empty();
+                $.each(questions, function (index, question) {
+                    $("#List").append("<li>" + question.fields['question'] + "</li>");
+                });
+            }).fail(function (jqXHR, textStatus, errorThrown) {
+                        alert("Error" + errorThrown);
+                    });
+
+            function colorFromValue(value) {
+                var color;
+                if (value > 100) {
+                    color = "#009933";
+                } else if (value > 75) {
+                    color = "#33CC33";
+                } else if (value < 50) {
+                    color = "#FF0000";
+                } else if (value < 25) {
+                    color = "#FF3300";
+                } else {
+                    color = "#FFFFFF";
+                }
+                return color;
+            };
+
+            setInterval(updatePercentage, 2000);
+
+            function updatePercentage() {
+
+                $.get('all',function (data) {
+                    var percentages = data[0]['percentages'];
+                    var count = data[0]['count'];
+                    for (var i = 0; i < percentages.length; i++) {
+                        var percentage = $('#Percent' + i.toString())
+                        percentage.html(percentages[i] + " %").css('background-color',
+                                colorFromValue(percentages[i]));
+                    }
+
+                    $("#count").html(count)
+                }).fail(function (jqXHR, textStatus, errorThrown) {
+                            alert("Error" + errorThrown);
+                        });
+
+            };
+        });
+
+        (function ($) {
+            $(function () {
+                var createMessage = function (message) {
+                    $("#List").append("<li>" + message + "</li>")
+                }
+                var socket = io.connect('{{async_url}}');
+                socket.on('message-create', function (data) {
+                    console.log(data);
+                    createMessage(data["question"]);
+                });
+            })
+        })(jQuery)
+
+
+
+    </script>
     <script src="{{ STATIC_URL }}js/bootstrap-transition.js"></script>
     <script src="{{ STATIC_URL }}js/bootstrap-alert.js"></script>
     <script src="{{ STATIC_URL }}js/bootstrap-modal.js"></script>
