@@ -50,7 +50,6 @@ def end_session(request):
             stats = Stats.objects.get(pk=stat_key)
             stats.live = False
             stats.save()
-
     logout(request)
     request.session.clear()
     return redirect(reverse('rtr:index'))

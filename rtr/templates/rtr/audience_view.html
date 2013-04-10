@@ -201,11 +201,11 @@
             </div>
         </div>
 
-        <form class="form-horizontal" action="leavesession/" method="post">
+        <form class="form-horizontal" action="/rtr/endsession/" method="post">
             {% csrf_token %}
             <div class="form-actions">
                 <button type="submit" id="leave_session" class="btn btn-primary"
-                        onclick="document.location.href = '/rtr';">Leave Session
+                        onclick="document.location.href = '/rtr/endsession/';">Leave Session
                 </button>
             </div>
         </form>
