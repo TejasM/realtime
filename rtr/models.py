@@ -14,6 +14,7 @@ def send_event(event_type, event_data):
     }
     urllib2.urlopen(settings.ASYNC_BACKEND_URL, urllib.urlencode(to_send))
 
+
 class Series(models.Model):
     live = models.BooleanField(default=False)
     series_id = models.CharField(max_length=200)

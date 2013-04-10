@@ -16,7 +16,7 @@ from django.utils.safestring import mark_safe
 import pytz
 from mysite import settings
 
-from rtr.models import Session, Series, Stats, Question, Stat
+from rtr.models import Session, Series, Stats, Question, Stat, send_event
 
 
 def index(request):
@@ -42,6 +42,8 @@ def end_session(request):
         session = Session.objects.get(pk=int(request.session['session']))
         session.cur_num -= 1
         session.save()
+        send_event('student-count-' + str(session.id), {'count', session.cur_num})
+
         statids = request.session.get('statids')
         if statids[-1] == ',':
             statids = statids[:len(statids) - 1]
@@ -50,6 +52,7 @@ def end_session(request):
             stats = Stats.objects.get(pk=stat_key)
             stats.live = False
             stats.save()
+
     logout(request)
     request.session.clear()
     return redirect(reverse('rtr:index'))
@@ -271,6 +274,8 @@ def loginUser(request):
             session.cur_num += 1
             if session.cur_num > session.max_num:
                 session.max_num = session.cur_num
+
+            send_event('student-count-' + str(session.id), {'count', session.cur_num})
             session.save()
             stats = session.stats_on.split(",")
             stat_ids = ""

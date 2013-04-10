@@ -104,14 +104,11 @@
 
                 $.get('all',function (data) {
                     var percentages = data[0]['percentages'];
-                    var count = data[0]['count'];
                     for (var i = 0; i < percentages.length; i++) {
                         var percentage = $('#Percent' + i.toString())
                         percentage.html(percentages[i] + " %").css('background-color',
                                 colorFromValue(percentages[i]));
                     }
-
-                    $("#count").html(count)
                 }).fail(function (jqXHR, textStatus, errorThrown) {
                             alert("Error" + errorThrown);
                         });
@@ -128,6 +125,11 @@
                 socket.on('message-create-{{ session }}', function (data) {
                     console.log(data);
                     createMessage(data["question"]);
+                });
+
+                socket.on('student-count-{{ session }}', function(data){
+                    console.log(data);
+                    $('#count').html(data["count"]);
                 });
             })
         })(jQuery)
