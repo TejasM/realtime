@@ -129,7 +129,8 @@
 
                 socket.on('student-count-{{ session }}', function(data){
                     console.log(data);
-                    $('#count').html(data["count"]);
+                    var count = parseInt(data["count"]);
+                    $('#count').html(count);
                 });
             })
         })(jQuery)

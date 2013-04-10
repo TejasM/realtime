@@ -42,7 +42,7 @@ def end_session(request):
         session = Session.objects.get(pk=int(request.session['session']))
         session.cur_num -= 1
         session.save()
-        send_event('student-count-' + str(session.id), {'count', session.cur_num})
+        send_event('student-count-' + str(session.id), json.dumps({'count': session.cur_num}))
 
         statids = request.session.get('statids')
         if statids[-1] == ',':
@@ -274,9 +274,8 @@ def loginUser(request):
             session.cur_num += 1
             if session.cur_num > session.max_num:
                 session.max_num = session.cur_num
-
-            send_event('student-count-' + str(session.id), {'count', session.cur_num})
             session.save()
+            send_event('student-count-' + str(session.id), json.dumps({'count': session.cur_num}))
             stats = session.stats_on.split(",")
             stat_ids = ""
             for stat in stats:
