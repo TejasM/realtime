@@ -201,12 +201,9 @@
             </div>
         </div>
 
-        <form class="form-horizontal" action="/rtr/endsession/" method="get">
-            {% csrf_token %}
-            <div class="form-actions">
-                <button type="submit" id="leave_session" class="btn btn-primary">Leave Session</button>
-            </div>
-        </form>
+        <div class="form-actions">
+            <a href="/rtr/endsession/" class="btn btn-primary login" onclick="document.location.href = '/rtr/endsession/';">Logout</a>
+        </div>
     </div>
 {% endblock %}
 
