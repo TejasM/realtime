@@ -139,8 +139,8 @@
 
                 $.post('audienceResponse/', {
                     {% for label in labels %}
-                            "value{{ forloop.counter0 }}": slider_{{ label }}.val(),
-                            "oldvalue{{ forloop.counter0 }}": initValue_{{ label }},
+                        "value{{ forloop.counter0 }}": slider_{{ label }}.val(),
+                        "oldvalue{{ forloop.counter0 }}": initValue_{{ label }},
                     {% endfor %}
                 }).fail(function (jqXHR, textStatus, errorThrown) {
                             document.location.href = '/rtr/endsession/';
@@ -201,8 +201,11 @@
             </div>
         </div>
 
-        <div class="form-actions">
-            <a href="/rtr/endsession/" class="btn btn-primary login" onclick="document.location.href = '/rtr/endsession/';">Logout</a>
+        <div data-role="content" id="QuestionSubmit" data-role="fieldcontain">
+            <div class="control-group">
+                <a href="/rtr/endsession/" class="btn btn-primary login"
+                   onclick="document.location.href = '/rtr/endsession/';">Leave Session</a>
+            </div>
         </div>
     </div>
 {% endblock %}
