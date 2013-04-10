@@ -132,8 +132,19 @@ def get_stats(request):
         percentages = []
         for stat_on in stats:
             stats_per_user = Stats.objects.filter(session=request.session.get('session'), name=stat_on)
-            percentages.append(str(calculate_stats(stats_per_user)))
-        data = [{'percentages': percentages}]
+            percentages.append(str(max(0, min(round(50 + calculate_stats(stats_per_user, session.cur_num), 1), 100))))
+            data = [{'percentages': percentages}]
+        return HttpResponse(json.dumps(data), content_type='application/json')
+    else:
+        return redirect(request, 'rtr/index.html')
+
+
+@login_required()
+def get_count(request):
+    if request.session.get('type') == 'creater':
+        #Why are we getting stat object
+        session = Session.objects.get(pk=request.session.get('session'))
+        data = {'count': session.cur_num}
         return HttpResponse(json.dumps(data), content_type='application/json')
     else:
         return redirect(request, 'rtr/index.html')

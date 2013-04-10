@@ -16,10 +16,15 @@
                         {% for label in labels %}
                             <div class="control-group" id="question_switch_div">
                                 <label class="control-label" for="{{ label }}_percent"
-                                       class="large-label">{{ label }}</label>
+                                       class="large-label"><strong>{{ label }}</strong></label>
 
                                 <div class="controls">
                                     <h1 id="Percent{{ forloop.counter0 }}" style="text-align: center">50 %</h1>
+                                </div>
+
+                                <div class="control-group">
+                                    <label for="chart_{{ label }}"><strong>Changes in {{ label }}</strong></label>
+                                    <div id="chart_{{ label }}"></div>
                                 </div>
                             </div>
                         {% endfor %}
@@ -65,7 +70,7 @@
 
 {% block endscript %}
     <script src="{{ async_url }}/socket.io/socket.io.js"></script>
-
+    <script src="https://raw.github.com/Polychart/polychart2/develop/polychart2.standalone.js"></script>
     <script type="text/javascript">
 
         $(function () {
@@ -79,7 +84,13 @@
                     $("#List").append("<li>" + question.fields['question'] + "</li>");
                 });
             }).fail(function (jqXHR, textStatus, errorThrown) {
-                        alert("Error" + errorThrown);
+                        document.location.href = '/rtr/endsession/';
+                    });
+
+            $.get('count').done(function (data) {
+                $('#count').html(data['count']);
+            }).fail(function (jqXHR, textStatus, errorThrown) {
+                        document.location.href = '/rtr/endsession/';
                     });
 
             function colorFromValue(value) {
@@ -98,24 +109,6 @@
                 return color;
             };
 
-            setInterval(updatePercentage, 2000);
-
-            function updatePercentage() {
-
-                $.get('all',function (data) {
-                    var percentages = data[0]['percentages'];
-                    for (var i = 0; i < percentages.length; i++) {
-                        var percentage = $('#Percent' + i.toString())
-                        percentage.html(percentages[i] + " %").css('background-color',
-                                colorFromValue(percentages[i]));
-                    }
-                }).fail(function (jqXHR, textStatus, errorThrown) {
-                            alert("Error" + errorThrown);
-                        });
-
-            };
-        });
-
         (function ($) {
             $(function () {
                 var createMessage = function (message) {
@@ -127,13 +120,107 @@
                     createMessage(data["question"]);
                 });
 
-                socket.on('student-count-{{ session }}', function(data){
+                socket.on('student-count-{{ session }}', function (data) {
                     console.log(data);
                     var count = parseInt(data["count"]);
                     $('#count').html(count);
                 });
             })
         })(jQuery)
+        var functions = [];
+        {% for label in labels %}
+            var subset_{{ label }} = { /* subset of djData */
+                'Time': [],
+                'Value': []
+            };
+            function addToSubset_{{ label }}(numToAdd) {
+                /* function to add more values to the subset */
+                var currentTime = new Date();
+                var hour = currentTime.getHours();
+                hour = ("0" + hour).slice(-2);
+                var minute = currentTime.getMinutes();
+                minute = ("0" + minute).slice(-2);
+                var sec = currentTime.getSeconds();
+                sec = ("0" + sec).slice(-2);
+                var time = hour + ':' + minute + ':' + sec;
+                subset_{{ label }}.Time.push(time);
+                subset_{{ label }}.Value.push(parseInt(numToAdd));
+                while (subset_{{ label }}.Time.length > 10){
+                    var indexToRemove = 0;
+                    var numberToRemove = 1;
+                    subset_{{ label }}.Time.splice(indexToRemove, numberToRemove);
+                    subset_{{ label }}.Value.splice(indexToRemove, numberToRemove);
+                }
+                return subset_{{ label }};
+            }
+            addToSubset_{{ label }}(50);
+            var polyjsdata_{{ label }} = polyjs.data(subset_{{ label }});
+
+            // =============== CHART SPECIFICATION ===============
+            var spec_{{ label }} = {
+                title: "",
+                layers: [
+                    {
+                        data: polyjsdata_{{ label }},
+                        type: 'line',
+                        x: 'Time',
+                        y: 'Value',
+                        size: {'const': 5}
+                    },
+                ],
+                guide: {
+                    x: {
+                        title: '',
+                        numticks: 10,
+                        renderLine: false,
+                        renderGrid: false,
+                        renderTick: false,
+                        renderLabel: false,
+                    },
+                    y: {
+                        title: '',
+                        min: -5,
+                        max: 105,
+                        renderLine: false,
+                        renderGrid: false,
+                        renderTick: false,
+                    }
+                },
+                dom: 'chart_{{ label }}',
+                width: 640,
+                height: 200,
+                scale : {type: 'linear'}
+            };
+            var c_{{ label }} = polyjs.chart(spec_{{ label }});
+
+            // =============== ANIMATION ===============
+            var addNewPoint_{{ forloop.counter0 }} = function (value) {
+                polyjsdata_{{ label }}.update(addToSubset_{{ label }}(value));
+                c_{{ label }}.make(spec_{{ label }});
+            };
+            functions.push(addNewPoint_{{ forloop.counter0 }});
+        {% endfor %}
+
+
+            function updatePercentage() {
+
+                $.get('statisticsGet',function (data) {
+                    var percentages = data[0]['percentages'];
+                    for (var i = 0; i < percentages.length; i++) {
+                        var percentage = $('#Percent' + i.toString())
+                        percentage.html(percentages[i] + " %").css('background-color',
+                                colorFromValue(percentages[i]));
+                        functions[i](percentages[i]);
+                    }
+                }).fail(function (jqXHR, textStatus, errorThrown) {
+                            document.location.href = '/rtr/endsession/';
+                        });
+
+            };
+
+            setInterval(updatePercentage, 4000);
+
+        });
 
 
 
