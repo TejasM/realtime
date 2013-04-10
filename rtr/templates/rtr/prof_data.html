@@ -125,7 +125,7 @@
                     $("#List").append("<li>" + message + "</li>")
                 }
                 var socket = io.connect('{{async_url}}');
-                socket.on('message-create', function (data) {
+                socket.on('message-create-{{ session }}', function (data) {
                     console.log(data);
                     createMessage(data["question"]);
                 });

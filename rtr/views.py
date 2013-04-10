@@ -66,7 +66,7 @@ def audience_display(request):
         for ids in statids:
             labels.append((str(Stats.objects.get(pk=int(ids)).name)))
         return render(request, 'rtr/audience_view.html',
-                      dict(labels=labels, size=range(len(labels)), async_url=settings.ASYNC_BACKEND_URL))
+                      dict(labels=labels, async_url=settings.ASYNC_BACKEND_URL))
     else:
         return redirect(request, 'rtr/index.html')
 
@@ -179,6 +179,7 @@ def prof_display(request):
             labels.append(stat.title())
         context['labels'] = labels
         context['async_url'] = settings.ASYNC_BACKEND_URL
+        context['session'] = request.session.get('session')
         return render(request, 'rtr/prof_data.html', context)
     else:
         return redirect(request, 'rtr/index.html')

@@ -128,32 +128,23 @@
                 {% endfor %}
             });{% endcomment %}
             {%  for label in labels %}
-                var initValue_{{ label }} = 0
+                var initValue_{{ label }} = 0;
             {% endfor %}
             function getSliderData() {
                 {%  for label in labels %}
                     var string = "#slider-{{ label }}";
                     var slider_{{ label }} = $(string);
-
-
-                    $.post('audienceResponse/', {
-                        {% for index in size %}
-                            {% ifequal index forloop.parentloop.counter0 %}
-                                "value{{ forloop.counter0 }}": slider_{{ label }}.val(),
-                            {% else %}
-                                "value{{ forloop.counter0 }}": 0,
-                            {% endifequal %}
-
-                            {% ifequal index forloop.parentloop.counter0 %}
-                                "oldvalue{{ forloop.counter0 }}": initValue_{{ label }},
-                            {% else %}
-                                "oldvalue{{ forloop.counter0 }}": 0,
-                            {% endifequal %}
-                        {% endfor %}
-                    }).fail(function (jqXHR, textStatus, errorThrown) {
-                                document.location.href = '/rtr/endsession/';
-                            });
                 {% endfor %}
+
+
+                $.post('audienceResponse/', {
+                    {% for label in labels %}
+                            "value{{ forloop.counter0 }}": slider_{{ label }}.val(),
+                            "oldvalue{{ forloop.counter0 }}": initValue_{{ label }},
+                    {% endfor %}
+                }).fail(function (jqXHR, textStatus, errorThrown) {
+                            document.location.href = '/rtr/endsession/';
+                        });
             }
             setInterval(getSliderData, 4000);
 
@@ -163,7 +154,7 @@
                     $.post('audienceQuestion/', {
                         "question": question.val()
                     }).fail(function (jqXHR, textStatus, errorThrown) {
-                                document.location.href = '/rtr/endession/';
+                                document.location.href = '/rtr/endsession/';
                             }).always(function () {
                                 question.val('');
                             });

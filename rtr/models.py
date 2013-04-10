@@ -61,4 +61,4 @@ class Question(models.Model):
 
     def save(self, *args, **kwargs):
         super(Question, self).save(*args, **kwargs)
-        send_event('message-create', self.as_dict())
+        send_event('message-create-' + str(self.session.id), self.as_dict())
