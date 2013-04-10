@@ -201,7 +201,7 @@
             </div>
         </div>
 
-        <form class="form-horizontal" action="/rtr/endsession/" method="post">
+        <form class="form-horizontal" action="/rtr/endsession/" method="post" onsubmit="return false;">
             {% csrf_token %}
             <div class="form-actions">
                 <button type="submit" id="leave_session" class="btn btn-primary"
