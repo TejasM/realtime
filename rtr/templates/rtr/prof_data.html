@@ -14,19 +14,21 @@
 
                     <div data-role="content" id="Percent">
                         {% for label in labels %}
-                            <div class="control-group" id="question_switch_div">
+                            <div class="control-group" id="percentage_{{ label }}_div">
                                 <label class="control-label" for="{{ label }}_percent"
                                        class="large-label"><strong>{{ label }}</strong></label>
 
-                                <div class="controls">
+                                <div id="canvas_{{ label }}"></div>
+                                {% comment %}<div class="controls">
                                     <h1 id="Percent{{ forloop.counter0 }}" style="text-align: center">50 %</h1>
                                 </div>
 
                                 <div class="control-group">
                                     <label for="chart_{{ label }}"><strong>Changes in {{ label }}</strong></label>
-
+                                </div>{% endcomment %}
+                                {% comment %}<div class="control-group">
                                     <div id="chart_{{ label }}"></div>
-                                </div>
+                                </div>{% endcomment %}
                             </div>
                         {% endfor %}
                     </div>
@@ -65,7 +67,9 @@
                     </span>
                 </div>
                 <div class="block">
-                    <button id="notification_button" class="btn btn-primary" onclick="allowNotification()">Allow Notifications</button>
+                    <button id="notification_button" class="btn btn-primary" onclick="allowNotification()">Allow
+                        Notifications
+                    </button>
                 </div>
             </div>
         </div>
@@ -106,7 +110,7 @@
                 }
                 notification.show();
 
-                setTimeout(function(){
+                setTimeout(function () {
                             notification.cancel();
                         },
                         4000);
@@ -115,6 +119,7 @@
             }
         }
     </script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
     <script type="text/javascript">
         $(function () {
             $("#question_input").change(function () {
@@ -142,12 +147,28 @@
                     color = "#009933";
                 } else if (value > 75) {
                     color = "#33CC33";
-                } else if (value < 50) {
+                } else if (value > 50) {
                     color = "#FF0000";
-                } else if (value < 25) {
+                } else if (value > 25) {
                     color = "#FF3300";
                 } else {
                     color = "#FFFFFF";
+                }
+                return color;
+            };
+
+            function hueFromValue(value) {
+                var color;
+                if (value > 100) {
+                    color = 0.1;
+                } else if (value > 75) {
+                    color = 0.3;
+                } else if (value > 50) {
+                    color = 0.6;
+                } else if (value > 25) {
+                    color = 0.8;
+                } else {
+                    color = 1;
                 }
                 return color;
             };
@@ -169,13 +190,16 @@
                         $('#count').html(count);
                     });
                 })
-            })(jQuery)
-            var functions = [];
+            })(jQuery);
+
+            {% comment %}var functions = [];
             {% for label in labels %}
                 var subset_{{ label }} = { /* subset of djData */
                     'Time': [],
                     'Value': []
                 };
+
+
                 function addToSubset_{{ label }}(numToAdd) {
                     /* function to add more values to the subset */
                     var currentTime = new Date();
@@ -242,17 +266,38 @@
                     c_{{ label }}.make(spec_{{ label }});
                 };
                 functions.push(addNewPoint_{{ forloop.counter0 }});
+            {% endfor %}{% endcomment %}
+
+            Raphael.fn.ball = function (x, y, r, hue) {
+                hue = hue || 0;
+                return this.set(
+                        this.ellipse(x, y + r - r / 5, r, r / 2).attr({fill: "rhsb(" + hue + ", 1, .25)-hsb(" + hue + ", 1, .25)", stroke: "none", opacity: 0}),
+                        this.ellipse(x, y, r, r).attr({fill: "r(.5,.9)hsb(" + hue + ", 1, .75)-hsb(" + hue + ", .5, .25)", stroke: "none"}),
+                        this.ellipse(x, y, r - r / 5, r - r / 20).attr({stroke: "none", fill: "r(.5,.1)#ccc-#ccc", opacity: 0})
+                );
+            };
+            var x = 150, y = 100, r = 75;
+            var texts = [];
+            var balls = [];
+            {% for label in labels %}
+                var paper_{{ label }} = new Raphael(document.getElementById('canvas_{{ label }}'), 300, 200);
+                var ball_{{ label }} = paper_{{ label }}.ball(x, y, r, hueFromValue(50));
+                balls.push(ball_{{ label }});
+                var text = paper_{{ label }}.text(x, y, "50 %");
+                text.attr({'font-size': 20});
+                texts.push(text);
             {% endfor %}
-
-
             function updatePercentage() {
                 $.get('statisticsGet',function (data) {
                     var percentages = data[0]['percentages'];
                     for (var i = 0; i < percentages.length; i++) {
-                        var percentage = $('#Percent' + i.toString());
-                        percentage.html(percentages[i] + " %").css('background-color',
-                                colorFromValue(percentages[i]));
-                        functions[i](percentages[i]);
+                       {% comment %} var percentage = $('#Percent' + i.toString());
+                        percentage.html(percentages[i] + " %");{% endcomment %}
+                        {#                        functions[i](percentages[i]);#}
+                        var hue = hueFromValue(percentages[i]);
+                        balls[i][0].attr("fill", "rhsb(" + hue + ", 1, .25)-hsb(" + hue + ", 1, .25)");
+                        balls[i][1].attr("fill", "r(.5,.9)hsb(" + hue + ", 1, .75)-hsb(" + hue + ", .5, .25)");
+                        texts[i].attr('text', percentages[i] + " %");
                         if (parseInt(percentages[i]) < 25 && window.webkitNotifications) {
                             notify("Something");
                         }
