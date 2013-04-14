@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 {% extends "template.html" %}
-<html>
+<html xmlns="http://www.w3.org/1999/html">
+<head>
+    {% block endHeader %}
+        <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css"/>
+        <script src="http://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
+    {% endblock %}
+</head>
 <body>
 {% block content %}
     <div class="row">
@@ -34,9 +40,45 @@
                     </div>
 
                     <div data-role="content" id="question_list">
-                        <h3>Questions</h3>
+                        <h3>Students Questions</h3>
                         <ul id="List">
                         </ul>
+                    </div>
+
+                    <div id="dialog-form" title="Ask Question">
+                        <form>
+                            {% csrf_token %}
+                            <fieldset>
+                                <div class="control-group">
+                                    <label class="control-label" for="question">Question</label>
+                                    <input type="text" name="question" id="question"
+                                           class="text ui-widget-content ui-corner-all"/>
+                                </div>
+                                <div class="controls" id="profs">
+                                    <div class="control-group" id="choices">
+                                        <label id="label1" for="field1" class="control-label">Choice 1:</label>
+                                        <input class="span3" id="field1" type="text"
+                                                />
+                                        <label id="label2" for="field2" class="control-label">Choice 2:</label>
+                                        <input class="span3" id="field2" type="text"
+                                                />
+                                        <button id="b1" onClick="addFormField()" class="btn btn-info" type="button">
+                                            +
+                                        </button>
+                                        <button id="b2" onClick="removeFormField()" class="btn btn-info"
+                                                type="button">
+                                            -
+                                        </button>
+                                    </div>
+                                    <br/>
+                                </div>
+                            </fieldset>
+                        </form>
+                    </div>
+
+                    <div id="dialog-form2" title="Poll Results">
+                        <h4 id="num-of-votes">Number of Votes: </h4>
+                        <canvas id="chart" width="800" height="400"></canvas>
                     </div>
 
                     <div class="control-group" id="question_switch_div">
@@ -66,9 +108,19 @@
                         0
                     </span>
                 </div>
-                <div class="block">
-                    <button id="notification_button" class="btn btn-primary" onclick="allowNotification()">Allow
+                <div class="block" id="notification_button">
+                    <button class="btn btn-primary" onclick="allowNotification()">Allow
                         Notifications
+                    </button>
+                </div>
+                <div class="block">
+                    <button id="create-poll">Ask Question</button>
+                </div>
+                <div class="block">
+                    <button id="end-poll">End Poll</button>
+                </div>
+                <div class="block">
+                    <button id="view-poll" onClick="window.location='/rtr/viewPolls/{{ session }}' ">View Poll Results
                     </button>
                 </div>
             </div>
@@ -77,14 +129,41 @@
 {% endblock %}
 
 {% block endscript %}
+    <script type="text/javascript">
+        var next = 2;
+        var rm_button = $('#b2');
+        function addFormField() {
+            var addto = "#field" + next;
+            next = next + 1;
+            var newIn = '<label id="label' + next + '" for="field' + next + '" class="control-label">Choice ' + next + ':</label><input class="span3" id="field' + next + '" name="field' + next + '" type="text">';
+            var newInput = $(newIn);
+            $(addto).after(newInput);
+            $("#field" + next).attr('data-source', $(addto).attr('data-source'));
+            $("#count").val(next);
+            rm_button.removeAttr('disabled');
+        }
+        function removeFormField() {
+            $('#label' + next.toString()).remove();
+            $('#field' + next.toString()).remove();
+            next -= 1;
+            if (next == 2) {
+                rm_button.attr('disabled', 'disabled')
+            }
+        }
+        rm_button.attr('disabled', 'disabled')
+    </script>
     <script src="{{ async_url }}/socket.io/socket.io.js"></script>
+    {% comment %}
     <script src="https://raw.github.com/Polychart/polychart2/develop/polychart2.standalone.js"></script>
+{% endcomment %}
     <script>
         if (window.webkitNotifications) {
             var havePermission = window.webkitNotifications.checkPermission();
             if (havePermission == 0) {
-                $('#notification_button').hide()
+                $('#notification_button').hide();
             }
+        } else {
+            $('#notification_button').hide();
         }
         function allowNotification() {
             if (window.webkitNotifications) {
@@ -120,199 +199,301 @@
         }
     </script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
+    <script src="{{ STATIC_URL }}js/Chart.min.js"></script>
     <script type="text/javascript">
-        $(function () {
-            $("#question_input").change(function () {
-                $("#question_list").toggle();
-            });
+    {% if poll %}
+        $("#create-poll").hide();
+        var poll_int = {{ poll }};
+    {% else %}
+        $("#end-poll").hide();
+        var poll_int = -1;
+    {% endif %}
 
-            $.get('questions').done(function (questions) {
-                $("#List").empty();
-                $.each(questions, function (index, question) {
-                    $("#List").append("<li>" + question.fields['question'] + "</li>");
+    $("#dialog-form").dialog({
+        autoOpen: false,
+        height: 'auto',
+        width: 'auto',
+        modal: true,
+        buttons: {
+            "Ask": function () {
+                var question = $('#question').val();
+                var choices_tags = $("input").filter(function () {
+                    return this.id.match(/field+/);
                 });
-            }).fail(function (jqXHR, textStatus, errorThrown) {
-                        document.location.href = '/rtr/endsession/';
-                    });
-
-            $.get('count').done(function (data) {
-                $('#count').html(data['count']);
-            }).fail(function (jqXHR, textStatus, errorThrown) {
-                        document.location.href = '/rtr/endsession/';
-                    });
-
-            function colorFromValue(value) {
-                var color;
-                if (value > 100) {
-                    color = "#009933";
-                } else if (value > 75) {
-                    color = "#33CC33";
-                } else if (value > 50) {
-                    color = "#FF0000";
-                } else if (value > 25) {
-                    color = "#FF3300";
-                } else {
-                    color = "#FFFFFF";
+                var choices = [];
+                for (var i = 0; i < choices_tags.length; i++) {
+                    choices.push(choices_tags[i].value);
                 }
-                return color;
-            };
-
-            function hueFromValue(value) {
-                var color;
-                if (value > 100) {
-                    color = 0.1;
-                } else if (value > 75) {
-                    color = 0.3;
-                } else if (value > 50) {
-                    color = 0.6;
-                } else if (value > 25) {
-                    color = 0.8;
-                } else {
-                    color = 1;
-                }
-                return color;
-            };
-
-            (function ($) {
-                $(function () {
-                    var createMessage = function (message) {
-                        $("#List").append("<li>" + message + "</li>")
-                    }
-                    var socket = io.connect('{{async_url}}');
-                    socket.on('message-create-{{ session }}', function (data) {
-                        console.log(data);
-                        createMessage(data["question"]);
-                    });
-
-                    socket.on('student-count-{{ session }}', function (data) {
-                        console.log(data);
-                        var count = parseInt(data["count"]);
-                        $('#count').html(count);
-                    });
-                })
-            })(jQuery);
-
-            {% comment %}var functions = [];
-            {% for label in labels %}
-                var subset_{{ label }} = { /* subset of djData */
-                    'Time': [],
-                    'Value': []
-                };
-
-
-                function addToSubset_{{ label }}(numToAdd) {
-                    /* function to add more values to the subset */
-                    var currentTime = new Date();
-                    var hour = currentTime.getHours();
-                    hour = ("0" + hour).slice(-2);
-                    var minute = currentTime.getMinutes();
-                    minute = ("0" + minute).slice(-2);
-                    var sec = currentTime.getSeconds();
-                    sec = ("0" + sec).slice(-2);
-                    var time = hour + ':' + minute + ':' + sec;
-                    subset_{{ label }}.Time.push(time);
-                    subset_{{ label }}.Value.push(parseInt(numToAdd));
-                    while (subset_{{ label }}.Time.length > 10) {
-                        var indexToRemove = 0;
-                        var numberToRemove = 1;
-                        subset_{{ label }}.Time.splice(indexToRemove, numberToRemove);
-                        subset_{{ label }}.Value.splice(indexToRemove, numberToRemove);
-                    }
-                    return subset_{{ label }};
-                }
-                addToSubset_{{ label }}(50);
-                var polyjsdata_{{ label }} = polyjs.data(subset_{{ label }});
-
-                // =============== CHART SPECIFICATION ===============
-                var spec_{{ label }} = {
-                    title: "",
-                    layers: [
-                        {
-                            data: polyjsdata_{{ label }},
-                            type: 'line',
-                            x: 'Time',
-                            y: 'Value',
-                            size: {'const': 5}
-                        },
-                    ],
-                    guide: {
-                        x: {
-                            title: '',
-                            numticks: 10,
-                            renderLine: false,
-                            renderGrid: false,
-                            renderTick: false,
-                            renderLabel: false,
-                        },
-                        y: {
-                            title: '',
-                            min: -5,
-                            max: 105,
-                            renderLine: false,
-                            renderGrid: false,
-                            renderTick: false,
-                        }
-                    },
-                    dom: 'chart_{{ label }}',
-                    width: 640,
-                    height: 200,
-                    scale: {type: 'linear'}
-                };
-                var c_{{ label }} = polyjs.chart(spec_{{ label }});
-
-                // =============== ANIMATION ===============
-                var addNewPoint_{{ forloop.counter0 }} = function (value) {
-                    polyjsdata_{{ label }}.update(addToSubset_{{ label }}(value));
-                    c_{{ label }}.make(spec_{{ label }});
-                };
-                functions.push(addNewPoint_{{ forloop.counter0 }});
-            {% endfor %}{% endcomment %}
-
-            Raphael.fn.ball = function (x, y, r, hue) {
-                hue = hue || 0;
-                return this.set(
-                        this.ellipse(x, y + r - r / 5, r, r / 2).attr({fill: "rhsb(" + hue + ", 1, .25)-hsb(" + hue + ", 1, .25)", stroke: "none", opacity: 0}),
-                        this.ellipse(x, y, r, r).attr({fill: "r(.5,.9)hsb(" + hue + ", 1, .75)-hsb(" + hue + ", .5, .25)", stroke: "none"}),
-                        this.ellipse(x, y, r - r / 5, r - r / 20).attr({stroke: "none", fill: "r(.5,.1)#ccc-#ccc", opacity: 0})
-                );
-            };
-            var x = 150, y = 100, r = 75;
-            var texts = [];
-            var balls = [];
-            {% for label in labels %}
-                var paper_{{ label }} = new Raphael(document.getElementById('canvas_{{ label }}'), 300, 200);
-                var ball_{{ label }} = paper_{{ label }}.ball(x, y, r, hueFromValue(50));
-                balls.push(ball_{{ label }});
-                var text = paper_{{ label }}.text(x, y, "50 %");
-                text.attr({'font-size': 20});
-                texts.push(text);
-            {% endfor %}
-            function updatePercentage() {
-                $.get('statisticsGet',function (data) {
-                    var percentages = data[0]['percentages'];
-                    for (var i = 0; i < percentages.length; i++) {
-                       {% comment %} var percentage = $('#Percent' + i.toString());
-                        percentage.html(percentages[i] + " %");{% endcomment %}
-                        {#                        functions[i](percentages[i]);#}
-                        var hue = hueFromValue(percentages[i]);
-                        balls[i][0].attr("fill", "rhsb(" + hue + ", 1, .25)-hsb(" + hue + ", 1, .25)");
-                        balls[i][1].attr("fill", "r(.5,.9)hsb(" + hue + ", 1, .75)-hsb(" + hue + ", .5, .25)");
-                        texts[i].attr('text', percentages[i] + " %");
-                        if (parseInt(percentages[i]) < 25 && window.webkitNotifications) {
-                            notify("Something");
-                        }
-                    }
-                }).fail(function (jqXHR, textStatus, errorThrown) {
+                $.post('postPoll/', {
+                    "question": question,
+                    "choices[]": choices
+                }).success(function (data) {
+                            poll_int = data['poll'];
+                        }).fail(function (jqXHR, textStatus, errorThrown) {
                             document.location.href = '/rtr/endsession/';
                         });
+                $("#end-poll").show();
+                $("#create-poll").hide();
+                $(this).dialog("close");
+            },
+            "Cancel": function () {
+                $(this).dialog("close");
+            }
+        },
+        close: function () {
+        }
+    });
+    $("#dialog-form2").dialog({
+        autoOpen: false,
+        height: 'auto',
+        width: 'auto',
+        modal: true,
+        buttons: {
+            "Close": function () {
+                $(this).dialog("close");
+            }
+        },
+        close: function () {
+        }
+    });
+    $("#create-poll")
+            .button()
+            .click(function () {
+                $("#dialog-form").dialog("open");
+            });
 
+    $("#end-poll")
+            .button()
+            .click(function () {
+                $.post('endPoll/', {
+                    "poll": poll_int
+                }).success(function (data) {
+                            var ctx = $("#chart").get(0).getContext("2d");
+                            var chart_data = {
+                                labels: data['choices'],
+                                datasets: [
+                                    {
+                                        fillColor: "rgba(151,187,205,0.5)",
+                                        strokeColor: "rgba(151,187,205,1)",
+                                        pointColor: "rgba(151,187,205,1)",
+                                        pointStrokeColor: "#fff",
+                                        data: data['votes']
+                                    }
+                                ]
+                            };
+                            var myNewChart = new Chart(ctx).Bar(chart_data);
+                            $('#num-of-votes').text("Number of Votes: " + data['total']);
+                            $("#dialog-form2").dialog("open");
+                        }).fail(function (jqXHR, textStatus, errorThrown) {
+                            document.location.href = '/rtr/endsession/';
+                        });
+                $("#end-poll").hide();
+                $("#create-poll").show();
+            });
+    $(function () {
+        $("#question_input").change(function () {
+            $("#question_list").toggle();
+        });
+
+        $.get('questions').done(function (questions) {
+            $("#List").empty();
+            $.each(questions, function (index, question) {
+                $("#List").append("<li>" + question.fields['question'] + "</li>");
+            });
+        }).fail(function (jqXHR, textStatus, errorThrown) {
+                    document.location.href = '/rtr/endsession/';
+                });
+
+        $.get('count').done(function (data) {
+            $('#count').html(data['count']);
+        }).fail(function (jqXHR, textStatus, errorThrown) {
+                    document.location.href = '/rtr/endsession/';
+                });
+
+        function colorFromValue(value) {
+            var color;
+            if (value > 100) {
+                color = "#009933";
+            } else if (value > 75) {
+                color = "#33CC33";
+            } else if (value > 50) {
+                color = "#FF0000";
+            } else if (value > 25) {
+                color = "#FF3300";
+            } else {
+                color = "#FFFFFF";
+            }
+            return color;
+        };
+
+        function hueFromValue(value) {
+            var color;
+            if (value > 100) {
+                color = 0.1;
+            } else if (value > 75) {
+                color = 0.3;
+            } else if (value > 50) {
+                color = 0.6;
+            } else if (value > 25) {
+                color = 0.8;
+            } else {
+                color = 1;
+            }
+            return color;
+        };
+
+        (function ($) {
+            $(function () {
+                var createMessage = function (message) {
+                    $("#List").append("<li>" + message + "</li>")
+                }
+                var socket = io.connect('{{async_url}}');
+                socket.on('message-create-{{ session }}', function (data) {
+                    console.log(data);
+                    createMessage(data["question"]);
+                });
+
+                socket.on('student-count-{{ session }}', function (data) {
+                    console.log(data);
+                    var count = parseInt(data["count"]);
+                    $('#count').html(count);
+                });
+            })
+        })(jQuery);
+
+        {% comment %}var functions = [];
+        {% for label in labels %}
+            var subset_{{ label }} = { /* subset of djData */
+                'Time': [],
+                'Value': []
             };
 
-            setInterval(updatePercentage, 4000);
 
-        });
+            function addToSubset_{{ label }}(numToAdd) {
+                /* function to add more values to the subset */
+                var currentTime = new Date();
+                var hour = currentTime.getHours();
+                hour = ("0" + hour).slice(-2);
+                var minute = currentTime.getMinutes();
+                minute = ("0" + minute).slice(-2);
+                var sec = currentTime.getSeconds();
+                sec = ("0" + sec).slice(-2);
+                var time = hour + ':' + minute + ':' + sec;
+                subset_{{ label }}.Time.push(time);
+                subset_{{ label }}.Value.push(parseInt(numToAdd));
+                while (subset_{{ label }}.Time.length > 10) {
+                    var indexToRemove = 0;
+                    var numberToRemove = 1;
+                    subset_{{ label }}.Time.splice(indexToRemove, numberToRemove);
+                    subset_{{ label }}.Value.splice(indexToRemove, numberToRemove);
+                }
+                return subset_{{ label }};
+            }
+            addToSubset_{{ label }}(50);
+            var polyjsdata_{{ label }} = polyjs.data(subset_{{ label }});
+
+            // =============== CHART SPECIFICATION ===============
+            var spec_{{ label }} = {
+                title: "",
+                layers: [
+                    {
+                        data: polyjsdata_{{ label }},
+                        type: 'line',
+                        x: 'Time',
+                        y: 'Value',
+                        size: {'const': 5}
+                    },
+                ],
+                guide: {
+                    x: {
+                        title: '',
+                        numticks: 10,
+                        renderLine: false,
+                        renderGrid: false,
+                        renderTick: false,
+                        renderLabel: false,
+                    },
+                    y: {
+                        title: '',
+                        min: -5,
+                        max: 105,
+                        renderLine: false,
+                        renderGrid: false,
+                        renderTick: false,
+                    }
+                },
+                dom: 'chart_{{ label }}',
+                width: 640,
+                height: 200,
+                scale: {type: 'linear'}
+            };
+            var c_{{ label }} = polyjs.chart(spec_{{ label }});
+
+            // =============== ANIMATION ===============
+            var addNewPoint_{{ forloop.counter0 }} = function (value) {
+                polyjsdata_{{ label }}.update(addToSubset_{{ label }}(value));
+                c_{{ label }}.make(spec_{{ label }});
+            };
+            functions.push(addNewPoint_{{ forloop.counter0 }});
+        {% endfor %}{% endcomment %}
+
+        Raphael.fn.ball = function (x, y, r, hue) {
+            hue = hue || 0;
+            return this.set(
+                    this.ellipse(x, y + r - r / 5, r, r / 2).attr({fill: "rhsb(" + hue + ", 1, .25)-hsb(" + hue + ", 1, .25)", stroke: "none", opacity: 0}),
+                    this.ellipse(x, y, r, r).attr({fill: "r(.5,.9)hsb(" + hue + ", 1, .75)-hsb(" + hue + ", .5, .25)", stroke: "none"}),
+                    this.ellipse(x, y, r - r / 5, r - r / 20).attr({stroke: "none", fill: "r(.5,.1)#ccc-#ccc", opacity: 0})
+            );
+        };
+        var x = 150, y = 100, r = 75;
+        var texts = [];
+        var balls = [];
+        {% for label in labels %}
+            var paper_{{ label }} = new Raphael(document.getElementById('canvas_{{ label }}'), 300, 200);
+            var ball_{{ label }} = paper_{{ label }}.ball(x, y, r, hueFromValue(50));
+            balls.push(ball_{{ label }});
+            var text = paper_{{ label }}.text(x, y, "50.0 %");
+            text.attr({'font-size': 30, fill: '#ffffff'});
+            texts.push(text);
+        {% endfor %}
+        function updatePercentage() {
+            $.get('statisticsGet',function (data) {
+                var percentages = data[0]['percentages'];
+                for (var i = 0; i < percentages.length; i++) {
+                    {% comment %} var percentage = $('#Percent' + i.toString());
+                     percentage.html(percentages[i] + " %");{% endcomment %}
+                    {#                        functions[i](percentages[i]);#}
+                    var hue = hueFromValue(percentages[i]);
+                    balls[i][0].attr("fill", "rhsb(" + hue + ", 1, .25)-hsb(" + hue + ", 1, .25)");
+                    balls[i][1].attr("fill", "r(.5,.9)hsb(" + hue + ", 1, .75)-hsb(" + hue + ", .5, .25)");
+                    texts[i].attr('text', percentages[i] + " %");
+                    if (parseInt(percentages[i]) < 25 && window.webkitNotifications) {
+                        notify("Something");
+                    }
+                }
+            }).fail(function (jqXHR, textStatus, errorThrown) {
+                        document.location.href = '/rtr/endsession/';
+                    });
+
+        };
+
+        setInterval(updatePercentage, 4000);
+
+    });
     </script>
-
+    {% comment %}<script>
+        function postPoll(event) {
+            event.stopImmediatePropagation();
+            var question = $('#question').val();
+            $.post('postPoll/', {
+                "question": question.val()
+            }).fail(function (jqXHR, textStatus, errorThrown) {
+                        document.location.href = '/rtr/endsession/';
+                    }).always(function () {
+                        question.val('');
+                    });
+        }
+    </script>{% endcomment %}
     <script src="{{ STATIC_URL }}js/bootstrap-transition.js"></script>
     <script src="{{ STATIC_URL }}js/bootstrap-alert.js"></script>
     <script src="{{ STATIC_URL }}js/bootstrap-modal.js"></script>

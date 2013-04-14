@@ -49,12 +49,11 @@
 
         <script src="{{ async_url }}/socket.io/socket.io.js"></script>
 
-
-
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     {% endblock %}
 
     {% block endHeader %}
+
         <script type="text/javascript">
             $(function () {
                 $(document).ajaxSend(function (event, xhr, settings) {
@@ -160,6 +159,38 @@
                             });
                 }
             }
+
+            function postPoll() {
+                var choice_id = $('input[type=radio]:checked').val();
+                $.post('answerPoll/', {
+                    choice: choice_id}).fail(function () {
+                            $('#div-error').text("Chose an answer");
+                        }).success(function () {
+                            $('#dialog-form').hide();
+                        })
+            }
+
+            var poll_int = -1;
+            var socket = io.connect('{{async_url}}');
+            socket.on('poll-create-{{ session }}', function (data) {
+                poll_int = data['id'];
+                $("#question").html("<strong>" + data['question'] + "</strong>");
+                var choices = data['choices'];
+                var ids = data['ids']
+                for (var i = 0; i < choices.length; i++) {
+                    var addto = "#choices";
+                    var newIn = '<div data-role="content" data-role="fieldcontain"><div class="control-group"><label id="label' + i + '" for="field1" class="radio"><input class="span3" id="field"' + i + '" type="radio" name="choice" value="' + ids[i] + '">'  + choices[i] + '</label></div></div>';
+                    var newInput = $(newIn);
+                    $(addto).append(newInput);
+                    $(addto).attr('data-source', $(addto).attr('data-source'));
+                }
+                $("#dialog-form").show();
+            });
+            socket.on('poll-end-{{ session }}', function (data) {
+                var addto = "#choices";
+                $(addto).text("");
+                $("#dialog-form").hide();
+            })
         </script>
     {% endblock %}
 </head>
@@ -201,10 +232,29 @@
             </div>
         </div>
 
+        <div id="dialog-form" title="Answer Question">
+            <h3>Poll Question</h3>
+            <div class="control-group">
+                <label id="question"
+                       class="label-xlarge"></label>
+            </div>
+            <div class="controls" id="profs">
+                <h3>Choices</h3>
+                <div class="control-group" id="choices">
+                </div>
+                <br/>
+            </div>
+            <div class="control-group" id="poll_submit_div">
+                <button type="text" class="btn btn-primary" class="btn" onclick="postPoll()">Submit Poll</button>
+            </div>
+            <div class="control-group" id="div-error">
+            </div>
+        </div>
         <div data-role="content" id="QuestionSubmit" data-role="fieldcontain">
             <div class="control-group">
                 <button class="btn btn-primary login"
-                   onclick="document.location.href = '/rtr/endsession/';">Leave Session</button>
+                        onclick="document.location.href = '/rtr/endsession/';">Leave Session
+                </button>
             </div>
         </div>
     </div>
@@ -212,6 +262,30 @@
 
 
 {% block endscript %}
+    <script>
+        {% if poll %}
+            $.get('livePoll',{
+                id: {{ poll }}
+            }).success(function(data){
+                        poll_int = data['id'];
+                        $("#question").html("<strong>" + data['question'] + "</strong>");
+                        var choices = data['choices'];
+                        var ids = data['ids']
+                        var addto = "#choices";
+                        $(addto).text("");
+                        for (var i = 0; i < choices.length; i++) {
+                            var newIn = '<div data-role="content" data-role="fieldcontain"><div class="control-group"><label id="label' + i + '" for="field1" class="radio"><input class="span3" id="field"' + i + '" type="radio" name="choice" value="' + ids[i] + '">'  + choices[i] + '</label></div></div>';
+                            var newInput = $(newIn);
+                            $(addto).append(newInput);
+                            $(addto).attr('data-source', $(addto).attr('data-source'));
+                        }
+                    }).fail(function(){
+
+                    });
+        {% else %}
+            $('#dialog-form').hide();
+        {% endif %}
+    </script>
     <script src="{{ STATIC_URL }}js/bootstrap-transition.js"></script>
     <script src="{{ STATIC_URL }}js/bootstrap-alert.js"></script>
     <script src="{{ STATIC_URL }}js/bootstrap-modal.js"></script>

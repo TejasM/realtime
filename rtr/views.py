@@ -12,11 +12,12 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.utils import timezone
 from django.utils.safestring import mark_safe
+from django.views.decorators.csrf import csrf_exempt
 
 import pytz
 from mysite import settings
 
-from rtr.models import Session, Series, Stats, Question, Stat, send_event
+from rtr.models import Session, Series, Stats, Question, Stat, send_event, Poll, Choice
 
 
 def index(request):
@@ -67,8 +68,18 @@ def audience_display(request):
         labels = []
         for ids in statids:
             labels.append((str(Stats.objects.get(pk=int(ids)).name)))
+        session = Session.objects.get(pk=request.session.get('session'))
+        polls = Poll.objects.filter(session=session, live=True)
+        if polls:
+            if not 'poll' in request.session or str(polls[0].id) not in request.session['poll']:
+                poll = polls[0].id
+            else:
+                poll = None
+        else:
+            poll = None
         return render(request, 'rtr/audience_view.html',
-                      dict(labels=labels, async_url=settings.ASYNC_BACKEND_URL))
+                      dict(labels=labels, async_url=settings.ASYNC_BACKEND_URL, session=request.session.get('session'),
+                           poll=poll))
     else:
         return redirect(request, 'rtr/index.html')
 
@@ -104,7 +115,7 @@ def updateStats(request):
     for i, stats in enumerate(statids):
         Stat.objects.create(change=int(request.POST['value' + str(i)]),
                             old_value=int(request.POST['oldvalue' + str(i)]), stats=Stats.objects.get(pk=stats))
-    return redirect(reverse('rtr:audience_display'))
+    return HttpResponse(json.dumps({}), mimetype="application/json")
 
 
 def calculate_stats(stats_per_user, num_of_users):
@@ -193,6 +204,11 @@ def prof_display(request):
         context['labels'] = labels
         context['async_url'] = settings.ASYNC_BACKEND_URL
         context['session'] = request.session.get('session')
+        polls = Poll.objects.filter(session=session, live=True)
+        if polls:
+            context['poll'] = polls[0].id
+        else:
+            context['poll'] = None
         return render(request, 'rtr/prof_data.html', context)
     else:
         return redirect(request, 'rtr/index.html')
@@ -400,3 +416,72 @@ def all_changes(individual_changes, label, zone):
         return tuple((mark_safe(x), y, label))
     else:
         return None
+
+
+@login_required()
+@csrf_exempt
+def post_poll(request):
+    poll = Poll.objects.create(question=request.POST['question'],
+                               session=Session.objects.get(pk=request.session['session']))
+    choices = request.POST.getlist('choices[]')
+    ids = []
+    for choice in choices:
+        choice_id = Choice.objects.create(poll=poll, choice_text=choice)
+        ids.append(choice_id.id)
+    send_event('poll-create-' + request.session['session'],
+               json.dumps({'id': poll.id, 'question': poll.question, 'choices': choices, 'ids': ids}))
+    return HttpResponse(json.dumps({'poll': poll.id}), mimetype="application/json")
+
+
+def get_live_poll(request):
+    poll = Poll.objects.get(pk=request.GET['id'])
+    choices = Choice.objects.filter(poll=poll)
+    ids = map(lambda x: x.id, choices)
+    choices = map(lambda x: x.choice_text, choices)
+    return HttpResponse(json.dumps({'id': poll.id, 'question': poll.question, 'choices': choices, 'ids': ids}),
+                        mimetype="application/json")
+
+
+@login_required()
+@csrf_exempt
+def end_poll(request):
+    send_event('poll-end-' + request.session['session'], json.dumps({'id': request.POST['poll']}))
+    poll = Poll.objects.get(pk=request.POST['poll'])
+    poll.live = False
+    poll.save()
+    choices = Choice.objects.filter(poll=poll)
+    votes = map(lambda x: x.votes, choices)
+    choices = map(lambda x: str(x.choice_text), choices)
+    total = reduce(lambda x, y: x + y, votes)
+    context = {'votes': votes, 'choices': choices, 'total': total}
+    return HttpResponse(json.dumps(context), mimetype="application/json")
+
+
+def ans_poll(request):
+    choice = Choice.objects.get(pk=request.POST['choice'])
+    choice.votes += 1
+    choice.save()
+    if 'poll' in request.session:
+        request.session['poll'] += str(choice.poll.id) + " "
+    else:
+        request.session['poll'] = str(choice.poll.id) + " "
+    return HttpResponse(json.dumps({}), mimetype="application/json")
+
+
+def view_polls(request, session_id):
+    context = {'Polls': Poll.objects.filter(session=session_id)}
+    return render(request, 'rtr/view_polls.html', context)
+
+
+def poll_context(poll_id):
+    poll = Poll.objects.get(pk=poll_id)
+    choices = Choice.objects.filter(poll=poll)
+    votes = map(lambda x: x.votes, choices)
+    choices = map(lambda x: str(x.choice_text), choices)
+    context = {'poll': poll, 'votes': votes, 'choices': mark_safe(choices)}
+    return context
+
+
+def view_poll(request, poll_id):
+    context = poll_context(poll_id)
+    return render(request, 'rtr/view_poll.html', context)

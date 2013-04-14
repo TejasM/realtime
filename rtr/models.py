@@ -63,3 +63,22 @@ class Question(models.Model):
     def save(self, *args, **kwargs):
         super(Question, self).save(*args, **kwargs)
         send_event('message-create-' + str(self.session.id), self.as_dict())
+
+
+class Poll(models.Model):
+    question = models.CharField(max_length=200)
+    session = models.ForeignKey(Session)
+    live = models.BooleanField(default=True)
+
+    def __unicode__(self):
+        return self.question
+
+
+class Choice(models.Model):
+    poll = models.ForeignKey(Poll)
+    choice_text = models.CharField(max_length=200)
+    votes = models.IntegerField(default=0)
+    correct_choice = models.BooleanField(default=False)
+
+    def __unicode__(self):
+        return self.choice_text

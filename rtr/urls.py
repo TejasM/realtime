@@ -23,5 +23,11 @@ urlpatterns = patterns('',
                        url(r'audience_view/leavesession/$', views.end_session, name='leave_session'),
                        url(r'viewSeries/(?P<series_id>\d+)/$', views.view_series, name='view_series'),
                        url(r'viewSession/(?P<session_id>\d+)/(?P<location>\w+)$', views.view_session, name='view_session'),
+                       url(r'profDisplay/postPoll/$', views.post_poll, name='post_poll'),
+                       url(r'profDisplay/endPoll/$', views.end_poll, name='post_poll'),
+                       url(r'audience_view/answerPoll/$', views.ans_poll, name='post_poll'),
+                       url(r'viewPolls/(?P<session_id>\d+)/$', views.view_polls, name='view_polls'),
+                       url(r'viewPoll/(?P<poll_id>\d+)$', views.view_poll, name='view_poll'),
+                       url(r'audience_view/livePoll/$', views.get_live_poll, name='live_poll'),
 )
 
