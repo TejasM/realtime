@@ -275,7 +275,7 @@
             .click(function () {
                 var socket = io.connect('{{async_url}}');
                 socket.send("start-trending-{{ session }}", "");
-                this.hide();
+                $(this).hide();
                 $("#stop_trend_question").show();
             });
 
@@ -292,7 +292,7 @@
                         });
                 var socket = io.connect('{{async_url}}');
                 socket.send("stop-trending-{{ session }}", "");
-                this.hide();
+                $(this).hide();
                 $("#trend_question").show();
             });
 
