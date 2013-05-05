@@ -8,10 +8,18 @@
         <script src="http://code.jquery.com/jquery-migrate-1.1.1.js"></script>
         <script type="text/javascript">
             $(document).ready(function () {
+                $("#create_option").hide();
+                $("#create_id").hide();
+                $("#join_id").show();
+                $("#username_div").hide();
+                $("#password_div").hide();
+                $("#view_sessions").hide();
                 $("#reg_btn").click(function () {
                     var e = document.getElementById("type_session");
                     e.selectedIndex = 0;
                     $("#create_option").show();
+                    $("#create_id").show();
+                    $("#join_id").hide();
                     $("#username_div").show();
                     $("#password_div").show();
                     $("#view_sessions").show();
@@ -22,6 +30,8 @@
                     var e = document.getElementById("type_session");
                     e.selectedIndex = 1;
                     $("#create_option").hide();
+                    $("#create_id").hide();
+                    $("#join_id").show();
                     $("#username_div").hide();
                     $("#password_div").hide();
                     $("#view_sessions").hide();
@@ -57,12 +67,23 @@
                         </div>
                     </div>
 
-                    <div class="control-group">
-                        <label class="control-label" id="session_id_label" for="session">Create/Join Session
-                            ID:</label>
+                    <div id="create_id" class="control-group">
+                        <label class="control-label" id="session_id_label" for="session">Create:</label>
 
                         <div class="controls">
                             <input type="text" name="session" id="session" value=""/>
+                        </div>
+                    </div>
+
+                    <div id="join_id" class="control-group">
+                        <label class="control-label" id="session_id_label" for="session">Join Session:</label>
+
+                        <div class="controls">
+                            <select id="session_id" class="dropdown-toggle" name="type_session">
+                                {% for session in sessions %}
+                                    <option id="{{ session }}" value="{{ session }}">{{ Session }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
                     </div>
 
@@ -79,10 +100,10 @@
                     </div>
 
                     <div class="btn-group" data-toggle="buttons-radio">
-                        <button type="button" value="registered" class="btn active" name="type_login" id="reg_btn">
+                        <button type="button" value="registered" class="btn" name="type_login" id="reg_btn">
                             Registered Login
                         </button>
-                        <button type="button" value="anonymous" class="btn" name="type_login" id="anon_btn">
+                        <button type="button" value="anonymous" class="btn active" name="type_login" id="anon_btn">
                             Anonymous Login
                         </button>
                     </div>
@@ -94,18 +115,26 @@
                 </fieldset>
             </form>
         </div>
-		<head>
-		  <title>iRespond</title>
-		</head>
-		<body>
-		   <iframe src="http://www.facebook.com/plugins/like.php?href=fry.io/iR"
-		    scrolling="no" frameborder="0"
-		    style="border:none; width:200px; height:50px"></iframe>
-		</body>
+        <head>
+            <title>iRespond</title>
+        </head>
+        <body>
+        <iframe src="http://www.facebook.com/plugins/like.php?href=fry.io/iR"
+                scrolling="no" frameborder="0"
+                style="border:none; width:200px; height:50px"></iframe>
+        </body>
 
-		<a href="https://twitter.com/share" class="twitter-share-button" data-lang="en">Tweet</a>
+        <a href="https://twitter.com/share" class="twitter-share-button" data-lang="en">Tweet</a>
 
-		<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="https://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+        <script>!function (d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (!d.getElementById(id)) {
+                js = d.createElement(s);
+                js.id = id;
+                js.src = "https://platform.twitter.com/widgets.js";
+                fjs.parentNode.insertBefore(js, fjs);
+            }
+        }(document, "script", "twitter-wjs");</script>
     </div>
 {% endblock %}
 

@@ -26,7 +26,6 @@ def index(request):
             return HttpResponseRedirect('profDisplay')
         elif request.session.get('type') == 'joiner':
             return redirect(reverse('rtr:audience_display'))
-
     series = Series.objects.filter(live=True)
     sessions = []
     for serie in series:
