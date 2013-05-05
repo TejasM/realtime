@@ -195,7 +195,7 @@ def get_all(request):
 @login_required()
 def get_questions(request):
     if request.session.get('type') == 'creater':
-        questions = Question.objects.filter(session=request.session.get('session'))
+        questions = Question.objects.filter(session=request.session.get('session')).order_by('votes')
         data = serializers.serialize('json', questions)
         return HttpResponse(data, mimetype='application/json')
     else:
