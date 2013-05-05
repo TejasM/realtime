@@ -41,8 +41,8 @@
 
                     <div data-role="content" id="question_list">
                         <h3>Questions</h3>
-                        <ul id="List">
-                        </ul>
+                        <table id="List">
+                        </table>
                     </div>
 
                     <div id="dialog-form" title="Ask Question">
@@ -125,6 +125,10 @@
                 </div>
                 <div class="block">
                     <button id="trend_question">Start Trending</button>
+                </div>
+
+                <div class="block">
+                    <button id="stop_trend_question">Stop Trending</button>
                 </div>
 
             </div>
@@ -266,6 +270,32 @@
                 $("#dialog-form").dialog("open");
             });
 
+    $("#trend_question")
+            .button()
+            .click(function () {
+                var socket = io.connect('{{async_url}}');
+                socket.send("start-trending-{{ session }}", "");
+                this.hide();
+                $("#stop_trend_question").show();
+            });
+
+    $("#stop_trend_question")
+            .button()
+            .click(function () {
+                $.get('questions').done(function (questions) {
+                    $("#List").empty();
+                    $.each(questions, function (index, question) {
+                        $("#List").append("<tr><td>" + question.fields['question'] + "</td>" + "<td>" + question.fields['votes'] + "</td>" + "</tr>");
+                    });
+                }).fail(function (jqXHR, textStatus, errorThrown) {
+                            document.location.href = '/rtr/endsession/';
+                        });
+                var socket = io.connect('{{async_url}}');
+                socket.send("stop-trending-{{ session }}", "");
+                this.hide();
+                $("#trend_question").show();
+            });
+
     $("#end-poll")
             .button()
             .click(function () {
@@ -294,19 +324,17 @@
                 $("#end-poll").hide();
                 $("#create-poll").show();
             });
+
+
     $(function () {
+        $("#stop_trend_question").hide();
+
+
         $("#question_input").change(function () {
             $("#question_list").toggle();
         });
 
-        $.get('questions').done(function (questions) {
-            $("#List").empty();
-            $.each(questions, function (index, question) {
-                $("#List").append("<li>" + question.fields['question'] + "</li>");
-            });
-        }).fail(function (jqXHR, textStatus, errorThrown) {
-                    document.location.href = '/rtr/endsession/';
-                });
+        $("#List").append("<tr><td>" + question.fields['question'] + "</td>" + "<td>" + question.fields['votes'] + "</td>" + "</tr>");
 
         $.get('count').done(function (data) {
             $('#count').html(data['count']);
@@ -359,8 +387,8 @@
         (function ($) {
             $(function () {
                 var createMessage = function (message) {
-                    $("#List").append("<li>" + message + "</li>")
                 }
+
                 var socket = io.connect('{{async_url}}');
                 socket.on('message-create-{{ session }}', function (data) {
                     console.log(data);

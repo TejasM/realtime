@@ -202,6 +202,14 @@ def get_questions(request):
         return redirect(request, 'rtr/index.html')
 
 
+def addVote(request):
+    id = request.POST["id"]
+    question = Question.objects.get(pk=id)
+    question.votes += 1
+    question.save()
+    return HttpResponse({}, mimetype='application/json')
+
+
 @login_required()
 def prof_display(request):
     if request.session.get('type') == 'creater':

@@ -2,186 +2,210 @@
 {% extends "template2.html" %}
 <html xmlns="http://www.w3.org/1999/html">
 <head>
-    {% block addtionalHeader %}
-        <title>StudentInfo</title>
-        <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"/>
+{% block addtionalHeader %}
+    <title>StudentInfo</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"/>
 
-        <!-- @todo: fill with your company info or remove -->
-        <!-- Your custom override -->
+    <!-- @todo: fill with your company info or remove -->
+    <!-- Your custom override -->
 
-        <link rel="stylesheet" href="{{ STATIC_URL }}bootstrapSwitch.css">
-        <!-- Bootstrap CSS -->
-        <link rel="stylesheet" href="http://code.jquery.com/mobile/1.3.0/jquery.mobile-1.3.0.min.css"/>
-        <script src="http://code.jquery.com/jquery-1.8.2.min.js"></script>
-        <script src="http://code.jquery.com/jquery-migrate-1.1.1.js"></script>
-        <script src="http://code.jquery.com/mobile/1.3.0/jquery.mobile-1.3.0.min.js"></script>
-    {% endblock %}
+    <link rel="stylesheet" href="{{ STATIC_URL }}bootstrapSwitch.css">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.3.0/jquery.mobile-1.3.0.min.css"/>
+    <script src="http://code.jquery.com/jquery-1.8.2.min.js"></script>
+    <script src="http://code.jquery.com/jquery-migrate-1.1.1.js"></script>
+    <script src="http://code.jquery.com/mobile/1.3.0/jquery.mobile-1.3.0.min.js"></script>
+{% endblock %}
 
-    {% block endHeader %}
-        <!-- Flexslider -->
-        <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
-        <!--[if lt IE 9]>
+{% block endHeader %}
+    <!-- Flexslider -->
+    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
       <script src="js/html5.js"></script>
     <![endif]-->
 
-        <!-- Le fav and touch icons - @todo: fill with your icons or remove -->
-        <link rel="shortcut icon" href="img/icons/favicon.png"/>
-        <link rel="apple-touch-icon-precomposed" sizes="114x114" href="img/icons/114x114.png"/>
-        <link rel="apple-touch-icon-precomposed" sizes="72x72" href="img/icons/72x72.png"/>
-        <link rel="apple-touch-icon-precomposed" href="img/icons/default.png"/>
-        <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700,300|Rambla|Calligraffitti' rel='stylesheet'
-              type='text/css'/>
+    <!-- Le fav and touch icons - @todo: fill with your icons or remove -->
+    <link rel="shortcut icon" href="img/icons/favicon.png"/>
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="img/icons/114x114.png"/>
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="img/icons/72x72.png"/>
+    <link rel="apple-touch-icon-precomposed" href="img/icons/default.png"/>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700,300|Rambla|Calligraffitti' rel='stylesheet'
+          type='text/css'/>
 
-        <script src="{{ async_url }}/socket.io/socket.io.js"></script>
+    <script src="{{ async_url }}/socket.io/socket.io.js"></script>
 
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-        <link href="{{ STATIC_URL }}assets/bootstrap/css/bootstrap.min.css" rel="stylesheet"/>
-        <link href="{{ STATIC_URL }}assets/css/metro.css" rel="stylesheet"/>
-        <link href="{{ STATIC_URL }}assets/font-awesome/css/font-awesome.css" rel="stylesheet"/>
-        <link href="{{ STATIC_URL }}assets/css/style.css" rel="stylesheet"/>
-        <link href="{{ STATIC_URL }}assets/css/style_responsive.css" rel="stylesheet"/>
-        <link href="{{ STATIC_URL }}assets/css/style_default.css" rel="stylesheet" id="style_color"/>
-        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}assets/uniform/css/uniform.default.css"/>
-        <script type="text/javascript">
-            $(function () {
-                $(document).ajaxSend(function (event, xhr, settings) {
-                    function getCookie(name) {
-                        var cookieValue = null;
-                        if (document.cookie && document.cookie != '') {
-                            var cookies = document.cookie.split(';');
-                            for (var i = 0; i < cookies.length; i++) {
-                                var cookie = jQuery.trim(cookies[i]);
-                                // Does this cookie string begin with the name we want?
-                                if (cookie.substring(0, name.length + 1) == (name + '=')) {
-                                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                                    break;
-                                }
-                            }
-                        }
-                        return cookieValue;
-                    }
-
-                    function sameOrigin(url) {
-                        // url could be relative or scheme relative or absolute
-                        var host = document.location.host; // host + port
-                        var protocol = document.location.protocol;
-                        var sr_origin = '//' + host;
-                        var origin = protocol + sr_origin;
-                        // Allow absolute or scheme relative URLs to same origin
-                        return (url == origin || url.slice(0, origin.length + 1) == origin + '/') ||
-                                (url == sr_origin || url.slice(0, sr_origin.length + 1) == sr_origin + '/') ||
-                            // or any other URL that isn't scheme relative or absolute i.e relative.
-                                !(/^(\/\/|http:|https:).*/.test(url));
-                    }
-
-                    function safeMethod(method) {
-                        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
-                    }
-
-                    if (!safeMethod(settings.type) && sameOrigin(settings.url)) {
-                        xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
-                    }
-                });
-            });
-
-            {%  for label in labels %}
-                var initValue_{{ label }} = 0;
-            {% endfor %}
-
-            $(document).ready(function () {
-
-                {% comment %}{%  for label in labels %}
-                    var initValue_{{ label }} = 3;
-                    var string = "#slider-{{ label }}";
-                    var slider_{{ label }} = $(string);
-
-                    slider_{{ label }}.bind("slidestop", function () {
-                        var value_{{ label }} = parseInt(this.value) - initValue_{{ label }};
-                        $.post('audienceResponse/', {
-                            {% for index in size %}
-                                {% ifequal index forloop.parentloop.counter0 %}
-                                    "value{{ forloop.counter0 }}": value_{{ label }},
-                                {% else %}
-                                    "value{{ forloop.counter0 }}": 0,
-                                {% endifequal %}
-
-                                {% ifequal index forloop.parentloop.counter0 %}
-                                    "oldvalue{{ forloop.counter0 }}": initValue_{{ label }},
-                                {% else %}
-                                    "oldvalue{{ forloop.counter0 }}": 0,
-                                {% endifequal %}
-                            {% endfor %}
-                        }).fail(function (jqXHR, textStatus, errorThrown) {
-                                    document.location.href = '/rtr/endsession/';
-                                });
-                        initValue_{{ label }} = parseInt(this.value);
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <link href="{{ STATIC_URL }}assets/bootstrap/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="{{ STATIC_URL }}assets/css/metro.css" rel="stylesheet"/>
+    <link href="{{ STATIC_URL }}assets/font-awesome/css/font-awesome.css" rel="stylesheet"/>
+    <link href="{{ STATIC_URL }}assets/css/style.css" rel="stylesheet"/>
+    <link href="{{ STATIC_URL }}assets/css/style_responsive.css" rel="stylesheet"/>
+    <link href="{{ STATIC_URL }}assets/css/style_default.css" rel="stylesheet" id="style_color"/>
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}assets/uniform/css/uniform.default.css"/>
+    <script type="text/javascript">
+        $(function () {
+            $("#question_list").hide();
+            var socket = io.connect('{{async_url}}');
+            socket.on("start-trending-{{ session }}", function (data) {
+                $.get('questions').done(function (questions) {
+                    $("#List").empty();
+                    $.each(questions, function (index, question) {
+                        $("#List").append("<li>" + question.fields['question'] + "</li>" +
+                                '<button onClick="addVote(' + question.fields['id'] + ');" class="btn btn-info" type="button"> + </button>');
                     });
-                {% endfor %}{% endcomment %}
-            });
-            function getSliderData() {
-                {%  for label in labels %}
-                    var string = "#slider-{{ label }}";
-                    var slider_{{ label }} = $(string);
-                {% endfor %}
-
-
-                $.post('audienceResponse/', {
-                    {% for label in labels %}
-                        "value{{ forloop.counter0 }}": slider_{{ label }}.val(),
-                        "oldvalue{{ forloop.counter0 }}": initValue_{{ label }},
-                    {% endfor %}
                 }).fail(function (jqXHR, textStatus, errorThrown) {
                             document.location.href = '/rtr/endsession/';
                         });
-            }
-            setInterval(getSliderData, 500);
+            });
 
-            function postQuestion() {
-                var question = $("#myQ");
-                if (question.val() != '') {
-                    $.post('audienceQuestion/', {
-                        "question": question.val()
+            function addVote(id) {
+                $.post("addVote", {"id": id}).fail(function (jqXHR, textStatus, errorThrown) {
+                    document.location.href = '/rtr/endsession/';
+                });
+                this.hide();
+            }
+
+            $(document).ajaxSend(function (event, xhr, settings) {
+                function getCookie(name) {
+                    var cookieValue = null;
+                    if (document.cookie && document.cookie != '') {
+                        var cookies = document.cookie.split(';');
+                        for (var i = 0; i < cookies.length; i++) {
+                            var cookie = jQuery.trim(cookies[i]);
+                            // Does this cookie string begin with the name we want?
+                            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                break;
+                            }
+                        }
+                    }
+                    return cookieValue;
+                }
+
+                function sameOrigin(url) {
+                    // url could be relative or scheme relative or absolute
+                    var host = document.location.host; // host + port
+                    var protocol = document.location.protocol;
+                    var sr_origin = '//' + host;
+                    var origin = protocol + sr_origin;
+                    // Allow absolute or scheme relative URLs to same origin
+                    return (url == origin || url.slice(0, origin.length + 1) == origin + '/') ||
+                            (url == sr_origin || url.slice(0, sr_origin.length + 1) == sr_origin + '/') ||
+                        // or any other URL that isn't scheme relative or absolute i.e relative.
+                            !(/^(\/\/|http:|https:).*/.test(url));
+                }
+
+                function safeMethod(method) {
+                    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+                }
+
+                if (!safeMethod(settings.type) && sameOrigin(settings.url)) {
+                    xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+                }
+            });
+        });
+
+        {%  for label in labels %}
+            var initValue_{{ label }} = 0;
+        {% endfor %}
+
+        $(document).ready(function () {
+
+            {% comment %}{%  for label in labels %}
+                var initValue_{{ label }} = 3;
+                var string = "#slider-{{ label }}";
+                var slider_{{ label }} = $(string);
+
+                slider_{{ label }}.bind("slidestop", function () {
+                    var value_{{ label }} = parseInt(this.value) - initValue_{{ label }};
+                    $.post('audienceResponse/', {
+                        {% for index in size %}
+                            {% ifequal index forloop.parentloop.counter0 %}
+                                "value{{ forloop.counter0 }}": value_{{ label }},
+                            {% else %}
+                                "value{{ forloop.counter0 }}": 0,
+                            {% endifequal %}
+
+                            {% ifequal index forloop.parentloop.counter0 %}
+                                "oldvalue{{ forloop.counter0 }}": initValue_{{ label }},
+                            {% else %}
+                                "oldvalue{{ forloop.counter0 }}": 0,
+                            {% endifequal %}
+                        {% endfor %}
                     }).fail(function (jqXHR, textStatus, errorThrown) {
                                 document.location.href = '/rtr/endsession/';
-                            }).always(function () {
-                                question.val('');
                             });
-                }
-            }
+                    initValue_{{ label }} = parseInt(this.value);
+                });
+            {% endfor %}{% endcomment %}
+        });
+        function getSliderData() {
+            {%  for label in labels %}
+                var string = "#slider-{{ label }}";
+                var slider_{{ label }} = $(string);
+            {% endfor %}
 
-            function postPoll() {
-                var choice_id = $('input[type=radio]:checked').val();
-                $.post('answerPoll/', {
-                    choice: choice_id}).fail(function () {
-                            $('#div-error').text("Chose an answer");
-                        }).success(function () {
-                            $('#dialog-form').hide();
-                        })
-            }
 
-            var poll_int = -1;
-            var socket = io.connect('{{async_url}}');
-            socket.on('poll-create-{{ session }}', function (data) {
-                poll_int = data['id'];
-                $("#question").html("<strong>" + data['question'] + "</strong>");
-                var choices = data['choices'];
-                var ids = data['ids']
-                for (var i = 0; i < choices.length; i++) {
-                    var addto = "#choices";
-                    var newIn = '<div data-role="content" data-role="fieldcontain"><div class="control-group"><label id="label' + i + '" for="field1" class="radio"><input class="span3" id="field"' + i + '" type="radio" name="choice" value="' + ids[i] + '">' + choices[i] + '</label></div></div>';
-                    var newInput = $(newIn);
-                    $(addto).append(newInput);
-                    $(addto).attr('data-source', $(addto).attr('data-source'));
-                }
-                $("#dialog-form").show();
-            });
-            socket.on('poll-end-{{ session }}', function (data) {
+            $.post('audienceResponse/', {
+                {% for label in labels %}
+                    "value{{ forloop.counter0 }}": slider_{{ label }}.val(),
+                    "oldvalue{{ forloop.counter0 }}": initValue_{{ label }},
+                {% endfor %}
+            }).fail(function (jqXHR, textStatus, errorThrown) {
+                        document.location.href = '/rtr/endsession/';
+                    });
+        }
+        setInterval(getSliderData, 500);
+
+        function postQuestion() {
+            var question = $("#myQ");
+            if (question.val() != '') {
+                $.post('audienceQuestion/', {
+                    "question": question.val()
+                }).fail(function (jqXHR, textStatus, errorThrown) {
+                            document.location.href = '/rtr/endsession/';
+                        }).always(function () {
+                            question.val('');
+                        });
+            }
+        }
+
+        function postPoll() {
+            var choice_id = $('input[type=radio]:checked').val();
+            $.post('answerPoll/', {
+                choice: choice_id}).fail(function () {
+                        $('#div-error').text("Chose an answer");
+                    }).success(function () {
+                        $('#dialog-form').hide();
+                    })
+        }
+
+        var poll_int = -1;
+        var socket = io.connect('{{async_url}}');
+        socket.on('poll-create-{{ session }}', function (data) {
+            poll_int = data['id'];
+            $("#question").html("<strong>" + data['question'] + "</strong>");
+            var choices = data['choices'];
+            var ids = data['ids']
+            for (var i = 0; i < choices.length; i++) {
                 var addto = "#choices";
-                $(addto).text("");
-                $("#dialog-form").hide();
-            })
-        </script>
-    {% endblock %}
+                var newIn = '<div data-role="content" data-role="fieldcontain"><div class="control-group"><label id="label' + i + '" for="field1" class="radio"><input class="span3" id="field"' + i + '" type="radio" name="choice" value="' + ids[i] + '">' + choices[i] + '</label></div></div>';
+                var newInput = $(newIn);
+                $(addto).append(newInput);
+                $(addto).attr('data-source', $(addto).attr('data-source'));
+            }
+            $("#dialog-form").show();
+        });
+        socket.on('poll-end-{{ session }}', function (data) {
+            var addto = "#choices";
+            $(addto).text("");
+            $("#dialog-form").hide();
+        })
+        socket.on('stop-trending-{{ session }}', function (data) {
+        $("#question_list").hide();
+        }
+    </script>
+{% endblock %}
 </head>
 <body>
 {% block content %}
@@ -245,6 +269,13 @@
                         <div class="control-group" id="div-error">
                         </div>
                     </div>
+
+                    <div data-role="content" id="question_list">
+                        <h3>Questions</h3>
+                        <ul id="List">
+                        </ul>
+                    </div>
+
                     <div data-role="content" id="QuestionSubmit" data-role="fieldcontain">
                         <div class="control-group">
                             <button class="btn btn-primary login"

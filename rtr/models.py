@@ -49,6 +49,7 @@ class Question(models.Model):
     session = models.ForeignKey(Session)
     question = models.CharField(max_length=500)
     time_asked = models.DateTimeField()
+    votes = models.IntegerField(default=0)
 
     def __unicode__(self):
         return self.question
