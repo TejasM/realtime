@@ -231,7 +231,7 @@ def prof_start_display(request):
     session.stats_on = ""
     for field in fields:
         if not field in session.stats_on:
-            session.stats_on += field.upper()
+            session.stats_on += field.upper() + ','
     if session.stats_on == "":
         return redirect(reverse("rtr:prof_settings"), {"error_message": "Select at least one stat"})
     if session.stats_on[-1] == ",":
