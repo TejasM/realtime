@@ -103,12 +103,23 @@ def check_session(f):
     return wrapper
 
 
+def is_spam(text):
+    tokens = text.lower().split()
+        for word in tokens:
+             if word in SPAMDICT:
+                  print "Spam detected:" + word
+                  return True
+    return False 
+
 @check_session
 def ask_question(request):
-    Question.objects.create(question=request.POST['question'],
+    text = request.POST['question']
+    if not is_spam(text):
+        Question.objects.create(question=request.POST['question'],
                             session=Session.objects.get(pk=request.session.get('session')),
                             time_asked=timezone.now())
     return redirect(reverse('rtr:audience_display'))
+
 
 
 @check_session

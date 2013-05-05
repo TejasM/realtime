@@ -2,6 +2,8 @@
 import os
 from django.conf.global_settings import LOGIN_URL
 import django
+import rtr.spam
+from collections import Counter
 # calculated paths for django and the site
 # used as starting points for various other paths
 DJANGO_ROOT = os.path.dirname(os.path.realpath(django.__file__))
@@ -185,3 +187,14 @@ DATABASES['default'] = dj_database_url.config()
 
 # Honor the 'X-Forwarded-Proto' header for request.is_secure()
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Badwords
+def loadSpam():
+    f = open("badwords.txt","r")
+    words = f.readlines()
+    words = [(word[:-2].lower()) for word in words]
+    return Counter(words)
+
+SPAMDICT = loadSpam()
+
+
