@@ -42,8 +42,13 @@
     <link rel="apple-touch-icon-precomposed" sizes="114x114" href="img/icons/114x114.png"/>
     <link rel="apple-touch-icon-precomposed" sizes="72x72" href="img/icons/72x72.png"/>
     <link rel="apple-touch-icon-precomposed" href="img/icons/default.png"/>
-    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700,300|Rambla|Calligraffitti' rel='stylesheet'
-          type='text/css'/>
+    <link href="{{ STATIC_URL }}assets/bootstrap/css/bootstrap.min.css" rel="stylesheet"/>
+        <link href="{{ STATIC_URL }}assets/css/metro.css" rel="stylesheet"/>
+        <link href="{{ STATIC_URL }}assets/font-awesome/css/font-awesome.css" rel="stylesheet"/>
+        <link href="{{ STATIC_URL }}assets/css/style.css" rel="stylesheet"/>
+        <link href="{{ STATIC_URL }}assets/css/style_responsive.css" rel="stylesheet"/>
+        <link href="{{ STATIC_URL }}assets/css/style_default.css" rel="stylesheet" id="style_color"/>
+        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}assets/uniform/css/uniform.default.css"/>
 
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     {% endblock %}
@@ -51,7 +56,7 @@
     {% endblock %}
 </head>
 
-<body class="page page-index">
+<body class="page page-index" style="background-color:  #444444">
 <div class="logo">
     <img src="{{ STATIC_URL }}assets/img/logo-big.png" alt=""/>
 </div>
