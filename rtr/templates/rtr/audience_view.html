@@ -90,7 +90,7 @@
 
             $(document).ready(function () {
 
-                {%  for label in labels %}
+                {% comment %}{%  for label in labels %}
                     var initValue_{{ label }} = 3;
                     var string = "#slider-{{ label }}";
                     var slider_{{ label }} = $(string);
@@ -116,9 +116,9 @@
                                 });
                         initValue_{{ label }} = parseInt(this.value);
                     });
-                {% endfor %}
+                {% endfor %}{% endcomment %}
             });
-            {% comment %}function getSliderData() {
+            function getSliderData() {
                 {%  for label in labels %}
                     var string = "#slider-{{ label }}";
                     var slider_{{ label }} = $(string);
@@ -134,7 +134,7 @@
                             document.location.href = '/rtr/endsession/';
                         });
             }
-            setInterval(getSliderData, 4000);{% endcomment %}
+            setInterval(getSliderData, 500);
 
             function postQuestion() {
                 var question = $("#myQ");

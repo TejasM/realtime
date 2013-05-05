@@ -29,7 +29,7 @@ def index(request):
     series = Series.objects.filter(live=True)
     sessions = []
     for serie in series:
-        sessions.append(serie.series_id)
+        sessions.append(str(serie.series_id))
     return render(request, 'rtr/index.html', {"async_url": settings.ASYNC_BACKEND_URL, "sessions": sessions})
 
 

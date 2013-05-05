@@ -14,6 +14,8 @@
                 $("#username_div").hide();
                 $("#password_div").hide();
                 $("#view_sessions").hide();
+                var e = document.getElementById("type_session");
+                e.selectedIndex = 1;
                 $("#reg_btn").click(function () {
                     var e = document.getElementById("type_session");
                     e.selectedIndex = 0;
@@ -24,6 +26,13 @@
                     $("#password_div").show();
                     $("#view_sessions").show();
                     $("#btn_input").value = this.value
+                });
+
+                document.getElementById("type_session").change(function () {
+                    if(e.selectedIndex == 1){
+                        $("#create_id").hide();
+                    $("#join_id").show();
+                    }
                 });
 
                 $("#anon_btn").click(function () {
@@ -81,7 +90,7 @@
                         <div class="controls">
                             <select id="session_id" class="dropdown-toggle" name="type_session">
                                 {% for session in sessions %}
-                                    <option id="{{ session }}" value="{{ session }}">{{ Session }}</option>
+                                    <option id="{{ session }}" value="{{ session }}">{{ session }}</option>
                                 {% endfor %}
                             </select>
                         </div>
