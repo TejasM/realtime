@@ -508,3 +508,15 @@ def poll_context(poll_id):
 def view_poll(request, poll_id):
     context = poll_context(poll_id)
     return render(request, 'rtr/view_poll.html', context)
+
+
+def trend(request):
+    session = Session.objects.get(pk=int(request.session['session']))
+    send_event('start-trending' + str(session.id), json.dumps({}))
+    return HttpResponse(json.dumps({}), mimetype="application/json")
+
+
+def stoptrend(request):
+    session = Session.objects.get(pk=int(request.session['session']))
+    send_event("stop-trending-{{ session }}" + str(session.id), json.dumps({}))
+    return HttpResponse(json.dumps({'poll': poll.id}), mimetype="application/json")

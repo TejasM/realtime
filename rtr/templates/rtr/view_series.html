@@ -39,24 +39,28 @@
               type='text/css'/>
         <script type="text/javascript">
             var tz = jstz.determine(); // Determines the time zone of the browser client
-            var loc=tz.name();
+            var loc = tz.name();
             loc = loc.replace("/", "1")
         </script>
     {% endblock %}
 </head>
 <body>
 {% block content %}
-    <div data-role="page">
-        <div data-role="header" class="center">
-            <h1>{{ request.session.session }}</h1>
+    <div class="row form-horizontal" style="background-color: #ffffff">
+        <div data-role="page">
+            <div data-role="header" class="center">
+                <h1>{{ request.session.session }}</h1>
+            </div>
+            <!-- /header -->
+            <ul>
+                {% for session in Sessions %}
+                    <li><a href="/rtr/viewSession/{{ session.id }}"
+                           onclick="location.href=this.href+'/'+loc;return false;">Session{{ forloop.counter }}</a>:
+                        Created
+                        - {{ session.create_time }}</li>
+                {% endfor %}
+            </ul>
         </div>
-        <!-- /header -->
-        <ul>
-            {% for session in Sessions %}
-                <li><a href="/rtr/viewSession/{{ session.id }}" onclick="location.href=this.href+'/'+loc;return false;">Session{{ forloop.counter }}</a>: Created
-                    - {{ session.create_time }}</li>
-            {% endfor %}
-        </ul>
     </div>
 {% endblock %}
 

@@ -61,15 +61,17 @@
 </head>
 <body>
 {% block content %}
-    <div data-role="page">
-        <div data-role="header" class="center">
-            <h1>{{ request.session.session }}</h1>
+    <div class="row form-horizontal" style="background-color: #ffffff">
+        <div data-role="page">
+            <div data-role="header" class="center">
+                <h1>{{ request.session.session }}</h1>
+            </div>
+            <!-- /header -->
+            {% for x, y, label in changes %}
+                <label for="chart_{{ label }}"><strong>{{ label }}</strong></label>
+                <canvas id="chart_{{ label }}" width="800" height="400"></canvas>
+            {% endfor %}
         </div>
-        <!-- /header -->
-        {% for x, y, label in changes %}
-            <label for="chart_{{ label }}"><strong>{{ label }}</strong></label>
-            <canvas id="chart_{{ label }}" width="800" height="400"></canvas>
-        {% endfor %}
     </div>
 {% endblock %}
 

@@ -273,8 +273,10 @@
     $("#trend_question")
             .button()
             .click(function () {
-                var socket = io.connect('{{async_url}}');
-                socket.send("start-trending-{{ session }}", "");
+                $.get('trend').done(function () {
+                }).fail(function (jqXHR, textStatus, errorThrown) {
+                            document.location.href = '/rtr/endsession/';
+                        });
                 $(this).hide();
                 $("#stop_trend_question").show();
             });
@@ -290,8 +292,10 @@
                 }).fail(function (jqXHR, textStatus, errorThrown) {
                             document.location.href = '/rtr/endsession/';
                         });
-                var socket = io.connect('{{async_url}}');
-                socket.send("stop-trending-{{ session }}", "");
+                $.get('stoptrend').done(function () {
+                }).fail(function (jqXHR, textStatus, errorThrown) {
+                            document.location.href = '/rtr/endsession/';
+                        });
                 $(this).hide();
                 $("#trend_question").show();
             });
