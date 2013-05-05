@@ -398,7 +398,7 @@
         (function ($) {
             $(function () {
                 var createMessage = function (message) {
-                    $("#List").append("<tr><td>" + question.fields['question'] + "</td>" + "<td>" + 0 + "</td>" + "</tr>");
+                    $("#List").append("<tr><td>" + message + "</td>" + "<td>" + 0 + "</td>" + "</tr>");
                 }
                 var socket = io.connect('{{async_url}}');
                 socket.on('message-create-{{ session }}', function (data) {
