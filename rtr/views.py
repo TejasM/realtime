@@ -98,16 +98,17 @@ def check_session(f):
             messages.error(request, "Session has now ended")
             request.session.clear()
             raise Exception("Session has ended")
+
     return wrapper
 
 
 def is_spam(text):
     tokens = text.lower().split()
     for word in tokens:
-         if word in settings.SPAMDICT:
-              print "Spam detected:" + word
-              return True
-    return False 
+        if word in settings.SPAMDICT:
+            print "Spam detected:" + word
+            return True
+    return False
 
 
 @check_session
@@ -115,10 +116,9 @@ def ask_question(request):
     text = request.POST['question']
     if not is_spam(text):
         Question.objects.create(question=request.POST['question'],
-                            session=Session.objects.get(pk=request.session.get('session')),
-                            time_asked=timezone.now())
+                                session=Session.objects.get(pk=request.session.get('session')),
+                                time_asked=timezone.now())
     return redirect(reverse('rtr:audience_display'))
-
 
 
 @check_session
@@ -265,8 +265,9 @@ def loginUser(request):
     session = request.POST.get('session', '')
     typeSession = request.POST.get('type_session', '')
     typeLogin = request.POST.get('optionLogin', '')
-
-    #Validate Post Data
+    if str(session) == '':
+        session = request.POST.get('session_join', '')
+        #Validate Post Data
     if session == '':
         messages.error(request, "Need to specify session id")
 
@@ -308,6 +309,7 @@ def loginUser(request):
 
     elif typeSession == "join":
         try:
+
             series = Series.objects.get(series_id=session, live=True)
             session_name = session
             session = Session.objects.filter(series_id=series).latest('create_time')

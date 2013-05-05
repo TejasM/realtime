@@ -16,6 +16,7 @@
                 $("#view_sessions").hide();
                 var e = document.getElementById("type_session");
                 e.selectedIndex = 1;
+                $("#session").val('');
                 $("#reg_btn").click(function () {
                     var e = document.getElementById("type_session");
                     e.selectedIndex = 0;
@@ -46,7 +47,6 @@
                     $("#view_sessions").hide();
                     $("#btn_input").val(this.value)
                 });
-
             });
         </script>
         <script src="{{ async_url }}/socket.io/socket.io.js"></script>
@@ -86,9 +86,9 @@
 
                     <div id="join_id" class="control-group">
                         <label class="control-label" id="session_id_label" for="session">Join Session:</label>
-
                         <div class="controls">
-                            <select id="session_id" class="dropdown-toggle" name="type_session">
+                            <select id="session_id" class="dropdown-toggle" name="session_join">
+                                    <option id="" value=""></option>
                                 {% for session in sessions %}
                                     <option id="{{ session }}" value="{{ session }}">{{ session }}</option>
                                 {% endfor %}
@@ -98,7 +98,6 @@
 
                     <div class="control-group">
                         <label class="control-label" for="type_session">Create or Join:</label>
-
                         <div class="controls">
                             <select id="type_session" name="type_session">
                                 <option id="create_option" value="create">Create Session</option>
@@ -116,7 +115,7 @@
                             Anonymous Login
                         </button>
                     </div>
-                    <input type="hidden" name="optionLogin" value="registered" id="btn_input"/>
+                    <input type="hidden" name="optionLogin" value="anonymous" id="btn_input"/>
 
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary">Login</button>
