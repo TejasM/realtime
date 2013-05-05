@@ -26,7 +26,12 @@ def index(request):
             return HttpResponseRedirect('profDisplay')
         elif request.session.get('type') == 'joiner':
             return redirect(reverse('rtr:audience_display'))
-    return render(request, 'rtr/index.html')
+
+    series = Series.objects.filter(live=True)
+    sessions = []
+    for serie in series:
+        sessions.append(serie.series_id)
+    return render(request, 'rtr/index.html', {"async_url": settings.ASYNC_BACKEND_URL, "sessions": sessions})
 
 
 def error(request):
@@ -217,20 +222,18 @@ def prof_display(request):
 @login_required()
 def prof_start_display(request):
     session = Session.objects.get(pk=request.session.get('session'))
-    try:
-        _ = request.POST['understanding_toggle']
-        if not 'Understanding' in session.stats_on:
-            session.stats_on += 'Understanding,'
-    except Exception as _:
-        pass
-    try:
-        _ = request.POST['interest_toggle']
-        if not 'Interest' in session.stats_on:
-            session.stats_on += 'Interest,'
-    except Exception as _:
-        pass
-    if not 'Understanding' in session.stats_on and not 'Interest' in session.stats_on:
-        return redirect(reverse("rtr:prof_settings"), {"error_message": "Select at least one of the stats"})
+    fields = []
+    for i in range(1, 10):
+        try:
+            fields.append(str(request.POST['metric' + str(i)]))
+        except Exception as _:
+            break
+    session.stats_on = ""
+    for field in fields:
+        if not field in session.stats_on:
+            session.stats_on += field.upper()
+    if session.stats_on == "":
+        return redirect(reverse("rtr:prof_settings"), {"error_message": "Select at least one stat"})
     if session.stats_on[-1] == ",":
         session.stats_on = session.stats_on[:len(session.stats_on) - 1]
     session.save()

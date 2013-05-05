@@ -3,65 +3,77 @@
 <html>
 <head>
     {% block addtionalHeader %}
-        <title>Professor Settings</title>
+        <title>Login</title>
+        <script src="http://code.jquery.com/jquery-1.8.2.js"></script>
+        <script src="http://code.jquery.com/jquery-migrate-1.1.1.js"></script>
         <script type="text/javascript">
+            $(document).ready(function () {
+                $('#b2').hide();
+            });
+            var next = 1;
+
+            function addFormField() {
+                var rm_button = $('#b2');
+                var addafter = "#metric" + next;
+                next = next + 1;
+                var newIn = '<label id="label' + next + '" for="metric' + next + '" class="control-label">Metric ' + next + ':</label><input class="span3" id="metric' + next + '" name="metric' + next + '" type="text">';
+                var newInput = $(newIn);
+                $(addafter).after(newInput);
+                $("#field" + next).attr('data-source', $(addafter).attr('data-source'));
+                $("#count").val(next);
+                rm_button.show();
+            }
+
+            function removeFormField() {
+                var rm_button = $('#b2');
+                $('#label' + next.toString()).remove();
+                $('#metric' + next.toString()).remove();
+                next -= 1;
+                if (next == 1) {
+                    rm_button.hide();
+                }
+            }
+
+
         </script>
+        <script src="{{ async_url }}/socket.io/socket.io.js"></script>
     {% endblock %}
 </head>
 <body>
 {% block content %}
-    <div data-role="page">
-        <div data-role="header" class="center">
-            <h1>{{ request.session.session_name }}</h1>
+    <div class="content">
+        <div id="dialog-form" style="width: auto; min-height: 21px; max-height: none; height: auto;"
+             class="ui-dialog-content ui-widget-content">
+            <div data-role="header" class="center">
+                <h1 class="nav nav-tabs">{{ request.session.session_name }}</h1>
+            </div>
+            <form action="start/" method="post">
+                {% csrf_token %}
+                <fieldset>
+                    <div class="controls" id="profs">
+                        <div class="control-group" id="choices">
+                            <label id="label1" for="metric1" class="control-label">Metric 1</label>
+                            <input class="span3" id="metric1" type="text" name="metric1">
+                            <a id="b1" class="btn" onclick="addFormField()">
+                                <i class="icon-plus"></i>
+                            </a>
+                            <br>
+                            <a id="b2" class="btn" onclick="removeFormField()">
+                                <i class="icon-minus"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <!--start session -->
+                    <div class="form-actions">
+                        <button type="submit" class="btn green big">GO LIVE!
+                            <i class="m-icon-big-swapright m-icon-white"></i>
+                        </button>
+                    </div>
+                </fieldset>
+            </form>
         </div>
-        <!-- /header -->
-        <form class="form-horizontal form-login form-wrapper form-medium" action="start/" method="post">
-            {% csrf_token %}
-            <fieldset>
-                <h3>Types of Statistics</h3>
-
-                <div class="control-group" id="uderstanding_div">
-                    <label class="control-label" for="understanding_toggle">Understanding:</label>
-
-                    <div class="controls">
-                        <div id="understanding_toggle_button" class="switch">
-                            <input type="checkbox" checked="checked" id="understanding_toggle"
-                                   name="understanding_toggle">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="control-group" id="interest_div">
-                    <label class="control-label" for="interest_toggle">Interest:</label>
-
-                    <div class="controls">
-                        <div id="interest_toggle_button" class="switch">
-                            <input type="checkbox" checked="checked" id="interest_toggle" name="interest_toggle">
-                        </div>
-                    </div>
-                </div>
-
-                <h3>General Settings</h3>
-
-                <div class="control-group" id="sound_div">
-                    <label class="control-label" for="sound">Sound Switch:</label>
-
-                    <div class="controls">
-                        <div id="sound_toggle_button" class="switch">
-                            <input type="checkbox" checked="checked" name="sound_toggle">
-                        </div>
-                    </div>
-                </div>
-
-                <!--start session -->
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary" class="btn">Start Session</button>
-                </div>
-            </fieldset>
-        </form>
     </div>
 {% endblock %}
-
 {% block endscript %}
     <script src="{{ STATIC_URL }}js/bootstrap-transition.js"></script>
     <script src="{{ STATIC_URL }}js/bootstrap-alert.js"></script>

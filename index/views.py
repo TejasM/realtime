@@ -8,7 +8,7 @@ import sys
 
 
 def index(request):
-    return render(request, 'index/index.html')
+    return redirect(reverse('rtr:index'))
 
 
 def about(request):

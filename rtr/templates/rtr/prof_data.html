@@ -1,128 +1,122 @@
 <!DOCTYPE html>
-{% extends "template.html" %}
+{% extends "template2.html" %}
 <html xmlns="http://www.w3.org/1999/html">
 <head>
-    {% block endHeader %}
+    {% block addtionalHeader %}
+        <script src="http://code.jquery.com/jquery-1.8.2.js"></script>
+        <script src="http://code.jquery.com/jquery-migrate-1.1.1.js"></script>
         <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css"/>
         <script src="http://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
     {% endblock %}
 </head>
 <body>
 {% block content %}
-    <div class="row">
-        <div class="span9 blog-post">
-            <div data-role="page">
-                <div id="container">
-                    <div data-role="header" class="center">
-                        <h1>{{ request.session.session_name }}</h1>
-                    </div>
-                    <!-- /header -->
 
-                    <div data-role="content" id="Percent">
-                        {% for label in labels %}
-                            <div class="control-group" id="percentage_{{ label }}_div">
-                                <label class="control-label" for="{{ label }}_percent"
-                                       class="large-label"><strong>{{ label }}</strong></label>
+    <div data-role="header" class="center">
+        <h1>{{ request.session.session_name }}</h1>
+    </div>
+    <!-- /header -->
+    <div data-role="content" id="Percent">
+        {% for label in labels %}
+            <div class="control-group" id="percentage_{{ label }}_div">
+                <label class="control-label" for="{{ label }}_percent"
+                       class="large-label"><strong>{{ label }}</strong></label>
 
-                                <div id="canvas_{{ label }}"></div>
-                                {% comment %}<div class="controls">
+                <div id="canvas_{{ label }}"></div>
+                {% comment %}<div class="controls">
                                     <h1 id="Percent{{ forloop.counter0 }}" style="text-align: center">50 %</h1>
                                 </div>
 
                                 <div class="control-group">
                                     <label for="chart_{{ label }}"><strong>Changes in {{ label }}</strong></label>
                                 </div>{% endcomment %}
-                                {% comment %}<div class="control-group">
+                {% comment %}<div class="control-group">
                                     <div id="chart_{{ label }}"></div>
                                 </div>{% endcomment %}
-                            </div>
-                        {% endfor %}
-                    </div>
+            </div>
+        {% endfor %}
+    </div>
 
-                    <div data-role="content" id="question_list">
-                        <h3>Students Questions</h3>
-                        <ul id="List">
-                        </ul>
-                    </div>
+    <div data-role="content" id="question_list">
+        <h3>Students Questions</h3>
+        <ul id="List">
+        </ul>
+    </div>
 
-                    <div id="dialog-form" title="Ask Question">
-                        <form>
-                            {% csrf_token %}
-                            <fieldset>
-                                <div class="control-group">
-                                    <label class="control-label" for="question">Question</label>
-                                    <input type="text" name="question" id="question"
-                                           class="text ui-widget-content ui-corner-all"/>
-                                </div>
-                                <div class="controls" id="profs">
-                                    <div class="control-group" id="choices">
-                                        <label id="label1" for="field1" class="control-label">Choice 1:</label>
-                                        <input class="span3" id="field1" type="text"
-                                                />
-                                        <label id="label2" for="field2" class="control-label">Choice 2:</label>
-                                        <input class="span3" id="field2" type="text"
-                                                />
-                                        <button id="b1" onClick="addFormField()" class="btn btn-info" type="button">
-                                            +
-                                        </button>
-                                        <button id="b2" onClick="removeFormField()" class="btn btn-info"
-                                                type="button">
-                                            -
-                                        </button>
-                                    </div>
-                                    <br/>
-                                </div>
-                            </fieldset>
-                        </form>
-                    </div>
-
-                    <div id="dialog-form2" title="Poll Results">
-                        <h4 id="num-of-votes">Number of Votes: </h4>
-                        <canvas id="chart" width="800" height="400"></canvas>
-                    </div>
-
-                    <div class="control-group" id="question_switch_div">
-                        <label class="control-label" for="question_input">Display Question:</label>
-
-                        <div class="controls">
-                            <div id="question_toggle_button" class="switch">
-                                <input type="checkbox" checked="checked" id="question_input">
-                            </div>
-                        </div>
-                    </div>
-                    <form class="form-horizontal" action="endsession/" method="post">
-                        {% csrf_token %}
-                        <div class="form-actions">
-                            <button type="submit" id="end_sesssion" class="btn btn-primary">End Session</button>
-                        </div>
-                    </form>
+    <div id="dialog-form" title="Ask Question">
+        <form>
+            {% csrf_token %}
+            <fieldset>
+                <div class="control-group">
+                    <label class="control-label" for="question">Question</label>
+                    <input type="text" name="question" id="question"
+                           class="text ui-widget-content ui-corner-all"/>
                 </div>
+                <div class="controls" id="profs">
+                    <div class="control-group" id="choices">
+                        <label id="label1" for="field1" class="control-label">Choice 1:</label>
+                        <input class="span3" id="field1" type="text"
+                                />
+                        <label id="label2" for="field2" class="control-label">Choice 2:</label>
+                        <input class="span3" id="field2" type="text"
+                                />
+                        <button id="b1" onClick="addFormField()" class="btn btn-info" type="button">
+                            +
+                        </button>
+                        <button id="b2" onClick="removeFormField()" class="btn btn-info"
+                                type="button">
+                            -
+                        </button>
+                    </div>
+                    <br/>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+
+    <div id="dialog-form2" title="Poll Results">
+        <h4 id="num-of-votes">Number of Votes: </h4>
+        <canvas id="chart" width="800" height="400"></canvas>
+    </div>
+
+    <div class="control-group" id="question_switch_div">
+        <label class="control-label" for="question_input">Display Question:</label>
+
+        <div class="controls">
+            <div id="question_toggle_button" class="switch">
+                <input type="checkbox" checked="checked" id="question_input">
             </div>
         </div>
+    </div>
+    <form class="form-horizontal" action="endsession/" method="post">
+        {% csrf_token %}
+        <div class="form-actions">
+            <button type="submit" id="end_sesssion" class="btn btn-primary">End Session</button>
+        </div>
+    </form>
 
-        <div class="span3 sidebar sidebar-right">
-            <div class="inner">
-                <div class="block">
-                    <h2>Number of Students</h2>
+    <div class="span3 sidebar sidebar-right">
+        <div class="inner">
+            <div class="block">
+                <h2>Number of Students</h2>
                     <span id="count">
                         0
                     </span>
-                </div>
-                <div class="block" id="notification_button">
-                    <button class="btn btn-primary" onclick="allowNotification()">Allow
-                        Notifications
-                    </button>
-                </div>
-                <div class="block">
-                    <button id="create-poll">Ask Question</button>
-                </div>
-                <div class="block">
-                    <button id="end-poll">End Poll</button>
-                </div>
-                <div class="block">
-                    <button id="view-poll" onClick="window.location='/rtr/viewPolls/{{ session }}' ">View Poll Results
-                    </button>
-                </div>
+            </div>
+            <div class="block" id="notification_button">
+                <button class="btn btn-primary" onclick="allowNotification()">Allow
+                    Notifications
+                </button>
+            </div>
+            <div class="block">
+                <button id="create-poll">Ask Question</button>
+            </div>
+            <div class="block">
+                <button id="end-poll">End Poll</button>
+            </div>
+            <div class="block">
+                <button id="view-poll" onClick="window.location='/rtr/viewPolls/{{ session }}' ">View Poll Results
+                </button>
             </div>
         </div>
     </div>
@@ -153,9 +147,6 @@
         rm_button.attr('disabled', 'disabled')
     </script>
     <script src="{{ async_url }}/socket.io/socket.io.js"></script>
-    {% comment %}
-    <script src="https://raw.github.com/Polychart/polychart2/develop/polychart2.standalone.js"></script>
-{% endcomment %}
     <script>
         if (window.webkitNotifications) {
             var havePermission = window.webkitNotifications.checkPermission();
