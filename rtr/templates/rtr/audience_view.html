@@ -53,6 +53,7 @@
                         $("#List").append("<li>" + question.fields['question'] + "</li>" +
                                 '<button onClick="addVote(' + question.fields['id'] + ');" class="btn btn-info" type="button"> + </button>');
                     });
+                    $("#question_list").show();
                 }).fail(function (jqXHR, textStatus, errorThrown) {
                             document.location.href = '/rtr/endsession/';
                         });

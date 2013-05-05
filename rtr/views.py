@@ -512,12 +512,12 @@ def view_poll(request, poll_id):
 
 def trend(request):
     session = Session.objects.get(pk=int(request.session['session']))
-    send_event('start-trending' + str(session.id), json.dumps({}))
+    send_event('start-trending-' + str(session.id), json.dumps({}))
     print "Trying to start trending"
     return HttpResponse(json.dumps({}), mimetype="application/json")
 
 
 def stoptrend(request):
     session = Session.objects.get(pk=int(request.session['session']))
-    send_event("stop-trending-{{ session }}" + str(session.id), json.dumps({}))
+    send_event("stop-trending-" + str(session.id), json.dumps({}))
     return HttpResponse(json.dumps({}), mimetype="application/json")
