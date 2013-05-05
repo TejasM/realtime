@@ -41,8 +41,8 @@
 
                     <div data-role="content" id="question_list">
                         <h3>Questions</h3>
-                        <table id="List">
-                        </table>
+                        <ul id="List">
+                        </ul>
                     </div>
 
                     <div id="dialog-form" title="Ask Question">
@@ -334,7 +334,14 @@
             $("#question_list").toggle();
         });
 
-        $("#List").append("<tr><td>" + question.fields['question'] + "</td>" + "<td>" + question.fields['votes'] + "</td>" + "</tr>");
+        $.get('questions').done(function (questions) {
+            $("#List").empty();
+            $.each(questions, function (index, question) {
+                $("#List").append("<tr><td>" + question.fields['question'] + "</td>" + "<td>" + question.fields['votes'] + "</td>" + "</tr>");
+            });
+        }).fail(function (jqXHR, textStatus, errorThrown) {
+                    document.location.href = '/rtr/endsession/';
+                });
 
         $.get('count').done(function (data) {
             $('#count').html(data['count']);
@@ -387,8 +394,8 @@
         (function ($) {
             $(function () {
                 var createMessage = function (message) {
+                    $("#List").append("<li>" + message + "</li>")
                 }
-
                 var socket = io.connect('{{async_url}}');
                 socket.on('message-create-{{ session }}', function (data) {
                     console.log(data);
