@@ -192,7 +192,6 @@ def get_all(request):
         return redirect(request, 'rtr/index.html')
 
 
-@login_required()
 def get_questions(request):
     if request.session.get('type') == 'creater':
         questions = Question.objects.filter(session=request.session.get('session')).order_by('votes')
