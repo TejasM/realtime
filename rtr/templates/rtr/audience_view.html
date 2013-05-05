@@ -87,7 +87,38 @@
             {%  for label in labels %}
                 var initValue_{{ label }} = 0;
             {% endfor %}
-            function getSliderData() {
+
+            $(document).ready(function () {
+
+                {%  for label in labels %}
+                    var initValue_{{ label }} = 3;
+                    var string = "#slider-{{ label }}";
+                    var slider_{{ label }} = $(string);
+
+                    slider_{{ label }}.bind("slidestop", function () {
+                        var value_{{ label }} = parseInt(this.value) - initValue_{{ label }};
+                        $.post('audienceResponse/', {
+                            {% for index in size %}
+                                {% ifequal index forloop.parentloop.counter0 %}
+                                    "value{{ forloop.counter0 }}": value_{{ label }},
+                                {% else %}
+                                    "value{{ forloop.counter0 }}": 0,
+                                {% endifequal %}
+
+                                {% ifequal index forloop.parentloop.counter0 %}
+                                    "oldvalue{{ forloop.counter0 }}": initValue_{{ label }},
+                                {% else %}
+                                    "oldvalue{{ forloop.counter0 }}": 0,
+                                {% endifequal %}
+                            {% endfor %}
+                        }).fail(function (jqXHR, textStatus, errorThrown) {
+                                    document.location.href = '/rtr/endsession/';
+                                });
+                        initValue_{{ label }} = parseInt(this.value);
+                    });
+                {% endfor %}
+            });
+            {% comment %}function getSliderData() {
                 {%  for label in labels %}
                     var string = "#slider-{{ label }}";
                     var slider_{{ label }} = $(string);
@@ -103,7 +134,7 @@
                             document.location.href = '/rtr/endsession/';
                         });
             }
-            setInterval(getSliderData, 4000);
+            setInterval(getSliderData, 4000);{% endcomment %}
 
             function postQuestion() {
                 var question = $("#myQ");

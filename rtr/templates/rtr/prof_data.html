@@ -316,15 +316,15 @@
                 color = "#00F00";
             } else if (value > 88.88) {
                 color = "#7CFC00";
-            }else if (value > 77.77) {
+            } else if (value > 77.77) {
                 color = "#9ACD32";
-            }else if (value > 66.66) {
+            } else if (value > 66.66) {
                 color = "#ADFF2F";
-            }else if (value > 55.55) {
+            } else if (value > 55.55) {
                 color = "#FFFF00";
-            }else if (value > 44.44) {
+            } else if (value > 44.44) {
                 color = "#FFA500";
-            }else if (value > 33.33) {
+            } else if (value > 33.33) {
                 color = "#FF8C00";
             } else if (value > 22.22) {
                 color = "#FF0000";
@@ -383,6 +383,7 @@
         var x = 150, y = 100, r = 75;
         var texts = [];
         var balls = [];
+        var oldPercentages = [];
         {% for label in labels %}
             var paper_{{ label }} = new Raphael(document.getElementById('canvas_{{ label }}'), 300, 200);
             var ball_{{ label }} = paper_{{ label }}.ball(x, y, r, hueFromValue(50));
@@ -390,7 +391,9 @@
             var text = paper_{{ label }}.text(x, y, "50.0 %");
             text.attr({'font-size': 30, fill: '#ffffff'});
             texts.push(text);
+            oldPercentages.push(50);
         {% endfor %}
+
         function updatePercentage() {
             $.get('statisticsGet',function (data) {
                 var percentages = data[0]['percentages'];
@@ -402,17 +405,20 @@
                     balls[i][0].attr("fill", "rhsb(" + hue + ", 1, .25)-hsb(" + hue + ", 1, .25)");
                     balls[i][1].attr("fill", "r(.5,.9)hsb(" + hue + ", 1, .75)-hsb(" + hue + ", .5, .25)");
                     texts[i].attr('text', percentages[i] + " %");
-                    if (parseInt(percentages[i]) < 25 && window.webkitNotifications) {
-                        notify("Something");
+                    if (parseInt(percentages[i]) < 25 && oldPercentages[i] > 50) {
+                        if (window.webkitNotifications) {
+                            notify("Something");
+                        }
                     }
                 }
+                oldPercentages = percentages;
             }).fail(function (jqXHR, textStatus, errorThrown) {
                         document.location.href = '/rtr/endsession/';
                     });
 
         };
 
-        setInterval(updatePercentage, 4000);
+        setInterval(updatePercentage, 1000);
 
     });
     </script>

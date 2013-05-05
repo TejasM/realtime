@@ -99,17 +99,17 @@ def check_session(f):
             messages.error(request, "Session has now ended")
             request.session.clear()
             raise Exception("Session has ended")
-
     return wrapper
 
 
 def is_spam(text):
     tokens = text.lower().split()
-        for word in tokens:
-             if word in SPAMDICT:
-                  print "Spam detected:" + word
-                  return True
+    for word in tokens:
+         if word in settings.SPAMDICT:
+              print "Spam detected:" + word
+              return True
     return False 
+
 
 @check_session
 def ask_question(request):
